@@ -1,0 +1,122 @@
+/* ============================================
+   CREATORA — Global Styles
+   Import this after variables.css
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+a { color: var(--text-link); text-decoration: none; transition: color var(--transition-fast); }
+a:hover { color: var(--text-link-hover); }
+
+/* ── Buttons ── */
+.btn-primary {
+  background-color: var(--brand-primary);
+  color: var(--text-on-primary);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 0.6rem 1.5rem;
+  font-weight: 500;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  cursor: pointer;
+}
+.btn-primary:hover { background-color: var(--brand-primary-hover); transform: translateY(-1px); }
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--brand-secondary);
+  border: 1.5px solid var(--brand-secondary);
+  border-radius: var(--radius-full);
+  padding: 0.6rem 1.5rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background-color: var(--brand-secondary);
+  color: white;
+}
+
+/* ── Cards ── */
+.card-creatora {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+  border: 1px solid var(--border-default);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+.card-creatora:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+/* ── Badges / Pills ── */
+.badge-role {
+  display: inline-block;
+  background: var(--color-soft-blush);
+  color: var(--color-berry-blush);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  text-transform: capitalize;
+}
+
+/* ── Navbar ── */
+.navbar-creatora {
+  background-color: var(--bg-dark);
+  padding: var(--space-4) var(--space-8);
+}
+.navbar-creatora .navbar-brand {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  color: var(--text-on-dark) !important;
+  font-weight: 700;
+}
+.navbar-creatora .nav-link {
+  color: rgba(255,235,237,0.8) !important;
+  font-size: var(--text-sm);
+  transition: color var(--transition-fast);
+}
+.navbar-creatora .nav-link:hover { color: var(--text-on-dark) !important; }
+
+/* ── Footer ── */
+.footer-creatora {
+  background: var(--bg-footer);
+  color: var(--color-lavender-blush);
+  padding: var(--space-12) var(--space-8) var(--space-6);
+}
+
+/* ── Section headings ── */
+.section-title {
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-2);
+}
+.section-subtitle {
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-8);
+}
+
+/* ── Utility ── */
+.text-brand   { color: var(--brand-primary); }
+.text-teal    { color: var(--color-pacific-cyan); }
+.bg-soft      { background-color: var(--bg-card-soft); }
+.bg-dark-brand { background-color: var(--bg-dark); }

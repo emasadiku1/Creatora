@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% block title %}Testimonials — Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dash-page { padding: 2rem 1rem 4rem; }
+
+  .page-header { margin-bottom: 2rem; }
+  .page-header h1 { font-family: var(--font-heading); color: var(--color-dark-amethyst); font-size: 1.75rem; margin: 0 0 .25rem; }
+  .page-header p  { color: var(--text-secondary); font-size: .9rem; margin: 0; }
+
+  .section-label {
+    font-family: var(--font-heading);
+    color: var(--color-dark-amethyst);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .badge-count {
+    background: var(--color-berry-blush);
+    color: white;
+    font-size: .7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-family: var(--font-body);
+  }
+  .badge-count.grey { background: var(--border-default); color: var(--text-secondary); }
+
+  .t-card {
+    background: white;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem 1.4rem;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+  }
+  .t-card.pending { border-left: 3px solid var(--color-berry-blush); }
+  .t-card.approved { border-left: 3px solid #22c55e; }
+
+  .t-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--color-soft-blush);
+    color: var(--color-berry-blush);
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  .t-body { flex: 1; min-width: 0; }
+  .t-meta { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin-bottom: .5rem; }
+  .t-name { font-weight: 700; color: var(--color-dark-amethyst); font-size: .95rem; }
+  .t-role { color: var(--text-secondary); font-size: .8rem; }
+  .t-stars { color: #f59e0b; font-size: .85rem; letter-spacing: 1px; }
+  .t-date  { color: var(--text-secondary); font-size: .75rem; margin-left: auto; }
+  .t-quote { color: var(--text-primary); font-size: .9rem; line-height: 1.6; margin: 0 0 .85rem; font-style: italic; }
+  .t-email { color: var(--text-secondary); font-size: .75rem; margin: 0 0 .85rem; }
+  .t-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+  .empty-state {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-default);
+    margin-bottom: 2rem;
+  }
+  .empty-state .icon { font-size: 2rem; color: var(--color-berry-blush); display: block; margin-bottom: .5rem; }
+  .empty-state p { color: var(--text-secondary); font-size: .875rem; margin: 0; }
+
+  .tip-box {
+    background: var(--color-soft-blush);
+    border: 1px solid var(--color-berry-blush);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    font-size: .85rem;
+    color: var(--color-dark-amethyst);
+    margin-bottom: 2rem;
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+  }
+  .tip-box i { flex: 0 0 auto; margin-top: .1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+  <div class="container-lg">
+
+    <div class="page-header">
+      <h1>Testimonials</h1>
+      <p>Review, approve, and manage what clients say about you on your public profile.</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} mb-3">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="tip-box">
+      <i class="bi bi-lightbulb-fill"></i>
+      <div>Testimonials are <strong>not shown publicly</strong> until you approve them. Share your profile link with happy clients and ask them to leave a review directly on your profile page.</div>
+    </div>
+
+    <!-- Pending -->
+    <div class="section-label">
+      Awaiting approval
+      {% if pending %}
+        <span class="badge-count">{{ pending | length }}</span>
+      {% else %}
+        <span class="badge-count grey">0</span>
+      {% endif %}
+    </div>
+
+    {% if pending %}
+      {% for t in pending %}
+      <div class="t-card pending">
+        <div class="t-avatar">{{ t.author_name[0] | upper }}</div>
+        <div class="t-body">
+          <div class="t-meta">
+            <span class="t-name">{{ t.author_name }}</span>
+            {% if t.author_title %}<span class="t-role">{{ t.author_title }}</span>{% endif %}
+            <span class="t-stars">{{ '★' * t.rating }}{{ '☆' * (5 - t.rating) }}</span>
+            <span class="t-date">{{ t.created_at.strftime('%b %d, %Y') }}</span>
+          </div>
+          <p class="t-quote">"{{ t.body }}"</p>
+          {% if t.author_email %}<p class="t-email"><i class="bi bi-envelope me-1"></i>{{ t.author_email }}</p>{% endif %}
+          <div class="t-actions">
+            <form method="POST" action="/dashboard/testimonials/{{ t.id }}/approve">
+              <button class="btn btn-sm btn-primary"><i class="bi bi-check-circle me-1"></i>Approve</button>
+            </form>
+            <form method="POST" action="/dashboard/testimonials/{{ t.id }}/delete" onsubmit="return confirm('Delete this testimonial?')">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash me-1"></i>Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <span class="icon"><i class="bi bi-inbox"></i></span>
+        <p>No testimonials waiting for review.</p>
+      </div>
+    {% endif %}
+
+    <!-- Approved -->
+    <div class="section-label mt-4">
+      Live on profile
+      {% if approved %}
+        <span class="badge-count">{{ approved | length }}</span>
+      {% else %}
+        <span class="badge-count grey">0</span>
+      {% endif %}
+    </div>
+
+    {% if approved %}
+      {% for t in approved %}
+      <div class="t-card approved">
+        <div class="t-avatar">{{ t.author_name[0] | upper }}</div>
+        <div class="t-body">
+          <div class="t-meta">
+            <span class="t-name">{{ t.author_name }}</span>
+            {% if t.author_title %}<span class="t-role">{{ t.author_title }}</span>{% endif %}
+            <span class="t-stars">{{ '★' * t.rating }}{{ '☆' * (5 - t.rating) }}</span>
+            <span class="t-date">{{ t.created_at.strftime('%b %d, %Y') }}</span>
+          </div>
+          <p class="t-quote">"{{ t.body }}"</p>
+          <div class="t-actions">
+            <form method="POST" action="/dashboard/testimonials/{{ t.id }}/delete" onsubmit="return confirm('Remove this testimonial from your profile?')">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash me-1"></i>Remove</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <span class="icon"><i class="bi bi-star"></i></span>
+        <p>No approved testimonials yet. Approve one above to show it on your profile.</p>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

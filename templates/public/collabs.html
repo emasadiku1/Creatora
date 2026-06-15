@@ -1,0 +1,800 @@
+{% extends 'base.html' %}
+{% block title %}Collabs — Find Your Creative Partner | Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  footer.footer-creatora { margin-top: 0 !important; }
+
+  /* ── Hero ── */
+  .cb-hero {
+    background: var(--color-dark-amethyst);
+    background: linear-gradient(135deg, #1a0d2e 0%, var(--color-dark-amethyst) 50%, #3a1a55 100%);
+    padding: 3.5rem 1rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cb-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 80%, rgba(163,62,126,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 20%, rgba(62,130,142,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cb-hero-badge {
+    display: inline-block;
+    background: rgba(163,62,126,0.2);
+    color: var(--color-powder-blush);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(163,62,126,0.35);
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .cb-hero h1 {
+    font-family: var(--font-heading);
+    font-size: 2.8rem;
+    color: white;
+    margin-bottom: 0.75rem;
+    line-height: 1.15;
+    position: relative;
+  }
+  .cb-hero p {
+    color: rgba(255,235,237,0.7);
+    font-size: 1rem;
+    max-width: 480px;
+    margin: 0 auto 2rem;
+    position: relative;
+  }
+
+  /* ── Search ── */
+  .cb-search-wrap {
+    position: relative;
+    max-width: 520px;
+    margin: 0 auto 1.25rem;
+  }
+  .cb-search-wrap input {
+    width: 100%;
+    padding: 0.75rem 1.25rem 0.75rem 3rem;
+    border-radius: 999px;
+    border: none;
+    background: rgba(255,235,237,0.1);
+    color: white;
+    font-size: 0.95rem;
+    outline: none;
+    transition: background var(--transition-fast);
+  }
+  .cb-search-wrap input::placeholder { color: rgba(255,235,237,0.4); }
+  .cb-search-wrap input:focus { background: rgba(255,235,237,0.16); }
+  .cb-search-wrap .bi-search {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,235,237,0.45);
+    font-size: 1rem;
+  }
+
+  /* ── Role filter pills ── */
+  .role-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    position: relative;
+  }
+  .role-pill {
+    background: rgba(255,235,237,0.08);
+    color: rgba(255,235,237,0.7);
+    border: 1px solid rgba(255,235,237,0.15);
+    padding: 5px 16px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+  .role-pill:hover {
+    background: rgba(255,235,237,0.15);
+    color: var(--color-lavender-blush);
+  }
+  .role-pill.active {
+    background: var(--color-berry-blush);
+    color: white;
+    border-color: var(--color-berry-blush);
+  }
+
+  /* ── Results bar ── */
+  .results-bar {
+    background: white;
+    border-bottom: 1px solid var(--border-default);
+    padding: 0.9rem 0;
+  }
+  .results-bar .count-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .results-bar strong {
+    color: var(--text-primary);
+  }
+
+  /* ── Collab cards grid ── */
+  .collabs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+    padding: 2rem 0 3rem;
+  }
+
+  .collab-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-default);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+  }
+  .collab-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+  }
+
+  .collab-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+  }
+  .collab-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--color-berry-blush);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: white;
+    font-weight: 700;
+    font-family: var(--font-heading);
+    flex-shrink: 0;
+  }
+  .collab-avatar.teal   { background: var(--color-pacific-cyan); }
+  .collab-avatar.peach  { background: var(--color-burnt-peach); }
+  .collab-avatar.mint   { background: var(--color-muted-teal); }
+  .collab-avatar.purple { background: var(--color-dark-amethyst); }
+
+  .collab-meta {
+    flex: 1;
+    min-width: 0;
+  }
+  .collab-meta h5 {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-dark-amethyst);
+    margin-bottom: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .collab-meta .creator-tag {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+  }
+
+  .open-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--color-honeydew);
+    color: var(--success-text);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .open-badge::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #2a6b3c;
+  }
+
+  .collab-title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-dark-amethyst);
+    line-height: 1.3;
+  }
+  .collab-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .collab-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .collab-tag {
+    background: var(--color-soft-blush);
+    color: var(--color-berry-blush);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .collab-tag.role {
+    background: rgba(62,130,142,0.1);
+    color: var(--color-pacific-cyan);
+  }
+  .collab-tag.location {
+    background: rgba(39,21,61,0.07);
+    color: var(--color-dark-amethyst);
+  }
+
+  .collab-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-default);
+    margin-top: auto;
+  }
+  .collab-footer .deadline {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .collab-footer .deadline.soon {
+    color: var(--color-burnt-peach);
+    font-weight: 500;
+  }
+  .reach-out-btn {
+    background: var(--color-dark-amethyst);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.4rem 1.1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+  }
+  .reach-out-btn:hover {
+    background: var(--color-berry-blush);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  /* ── Post a collab CTA card ── */
+  .post-collab-card {
+    background: linear-gradient(135deg, var(--color-dark-amethyst) 0%, #3a1a55 100%);
+    border-radius: var(--radius-lg);
+    border: 1px dashed rgba(163,62,126,0.4);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+    gap: 0.5rem;
+    min-height: 180px;
+    transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+  }
+  .post-collab-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+  }
+  .post-collab-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(163,62,126,0.3);
+    border: 2px solid rgba(163,62,126,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--color-powder-blush);
+    margin-bottom: 0.25rem;
+  }
+  .post-collab-card h5 {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+  }
+  .post-collab-card p {
+    font-size: 0.8rem;
+    color: rgba(255,235,237,0.55);
+    margin: 0;
+  }
+
+  /* ── Empty state ── */
+  .cb-empty {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--text-secondary);
+  }
+  .cb-empty i {
+    font-size: 2.5rem;
+    color: var(--color-powder-blush);
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  /* ── How it works strip ── */
+  .how-strip {
+    background: var(--color-dark-amethyst);
+    padding: 4rem 1rem;
+  }
+  .how-card {
+    background: rgba(255,235,237,0.05);
+    border: 1px solid rgba(255,235,237,0.08);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+  }
+  .how-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.75rem;
+  }
+  .how-card h6 {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-lavender-blush);
+    margin-bottom: 0.4rem;
+  }
+  .how-card p {
+    font-size: 0.8rem;
+    color: rgba(255,235,237,0.5);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* ── Modal ── */
+  .modal-content {
+    border-radius: var(--radius-lg);
+    border: none;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-header {
+    border-bottom: 1px solid var(--border-default);
+    padding: 1.25rem 1.5rem;
+  }
+  .modal-header .modal-title {
+    font-family: var(--font-heading);
+    color: var(--color-dark-amethyst);
+    font-size: 1.2rem;
+  }
+  .modal-body { padding: 1.5rem; }
+  .modal-body .form-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+  }
+  .modal-body .form-control,
+  .modal-body .form-select {
+    border-radius: var(--radius-sm);
+    border-color: var(--border-default);
+    font-size: 0.9rem;
+    padding: 0.55rem 0.85rem;
+    color: var(--text-primary);
+  }
+  .modal-body .form-control:focus,
+  .modal-body .form-select:focus {
+    border-color: var(--color-berry-blush);
+    box-shadow: 0 0 0 3px rgba(163,62,126,0.1);
+  }
+  .modal-footer {
+    border-top: 1px solid var(--border-default);
+    padding: 1rem 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    .cb-hero h1 { font-size: 2rem; }
+    .collabs-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ── HERO ── -->
+<section class="cb-hero">
+  <div class="container">
+    <div class="cb-hero-badge">🤝 Community Collabs</div>
+    <h1>Find your creative partner.</h1>
+    <p>Browse open collaboration calls from photographers, videographers, stylists, and creators across every niche.</p>
+
+    <!-- Search -->
+    <div class="cb-search-wrap">
+      <i class="bi bi-search"></i>
+      <input type="text" id="collab-search" placeholder="Search by title, role, or location…">
+    </div>
+
+    <!-- Role filter pills -->
+    <div class="role-filters mt-3">
+      <button class="role-pill active" data-role="">All roles</button>
+      {% for role, label in [
+        ('photographer', '📸 Photographer'),
+        ('videographer', '🎬 Videographer'),
+        ('digital_artist', '🎨 Digital Artist'),
+        ('influencer', '📱 Influencer'),
+        ('beauty', '💄 Beauty Creator'),
+        ('food', '🍳 Food Creator'),
+      ] %}
+      <button class="role-pill" data-role="{{ role }}">{{ label }}</button>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+<!-- ── RESULTS BAR ── -->
+<div class="results-bar">
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <p class="count-text mb-0">
+      <strong id="collab-count">{{ collabs|length }}</strong>
+      open collab{{ 's' if collabs|length != 1 else '' }}
+    </p>
+    {% if current_user.is_authenticated %}
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#postCollabModal"
+            style="font-size: 0.8rem; padding: 0.4rem 1.1rem;">
+      <i class="bi bi-plus-lg me-1"></i>Post a collab
+    </button>
+    {% else %}
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm"
+       style="font-size: 0.8rem; padding: 0.4rem 1.1rem;">
+      <i class="bi bi-plus-lg me-1"></i>Post a collab
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+
+<!-- ── COLLABS GRID ── -->
+<section style="background: var(--bg-page); padding-bottom: 1rem;">
+  <div class="container">
+
+    {% if collabs %}
+    <div class="collabs-grid" id="collabs-grid">
+
+      {% for collab in collabs %}
+      {% set avatar_colors = ['', 'teal', 'peach', 'mint', 'purple'] %}
+      {% set color_class = avatar_colors[loop.index0 % avatar_colors|length] %}
+      <div class="collab-card"
+           data-title="{{ collab.title|lower }}"
+           data-role="{{ collab.role_needed|lower if collab.role_needed else '' }}"
+           data-location="{{ collab.location|lower if collab.location else '' }}">
+
+        <!-- Header: avatar + creator + open badge -->
+        <div class="collab-card-header">
+          <div class="collab-avatar {{ color_class }}">
+            {{ (collab.creator.display_name or collab.creator.username)[0]|upper }}
+          </div>
+          <div class="collab-meta">
+            <h5>{{ collab.creator.display_name or collab.creator.username }}</h5>
+            <span class="creator-tag">
+              {{ collab.creator.role|replace('_', ' ')|title if collab.creator.role else 'Creator' }}
+            </span>
+          </div>
+          <span class="open-badge">Open</span>
+        </div>
+
+        <!-- Title -->
+        <p class="collab-title">{{ collab.title }}</p>
+
+        <!-- Description -->
+        {% if collab.description %}
+        <p class="collab-desc">{{ collab.description }}</p>
+        {% endif %}
+
+        <!-- Tags -->
+        <div class="collab-tags">
+          {% if collab.role_needed %}
+          <span class="collab-tag role">
+            <i class="bi bi-person-fill me-1"></i>{{ collab.role_needed|replace('_', ' ')|title }}
+          </span>
+          {% endif %}
+          {% if collab.location %}
+          <span class="collab-tag location">
+            <i class="bi bi-geo-alt me-1"></i>{{ collab.location }}
+          </span>
+          {% endif %}
+        </div>
+
+        <!-- Footer: deadline + CTA -->
+        <div class="collab-footer">
+          {% if collab.deadline %}
+          {% set days_left = (collab.deadline - now).days %}
+          <span class="deadline {{ 'soon' if days_left <= 7 else '' }}">
+            <i class="bi bi-calendar3"></i>
+            {% if days_left <= 0 %}Closing soon
+            {% elif days_left == 1 %}1 day left
+            {% elif days_left <= 7 %}{{ days_left }} days left
+            {% else %}{{ collab.deadline.strftime('%b %d') }}{% endif %}
+          </span>
+          {% else %}
+          <span class="deadline">
+            <i class="bi bi-clock"></i>
+            Posted {{ collab.created_at.strftime('%b %d') }}
+          </span>
+          {% endif %}
+
+          <button type="button" class="reach-out-btn" data-bs-toggle="modal" data-bs-target="#collabInterestModal{{ collab.id }}">
+            Reach out
+          </button>
+        </div>
+
+      </div>
+
+      <div class="modal fade" id="collabInterestModal{{ collab.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Respond to {{ collab.title }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form method="POST" action="{{ url_for('public.collab_interest', collab_id=collab.id) }}">
+                <div class="mb-3">
+                  <label class="form-label">Your name</label>
+                  <input type="text" name="name" class="form-control"
+                         value="{{ current_user.display_name or current_user.username if current_user.is_authenticated else '' }}"
+                         required maxlength="120">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Email</label>
+                  <input type="email" name="email" class="form-control"
+                         value="{{ current_user.email if current_user.is_authenticated else '' }}"
+                         required maxlength="120">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Message</label>
+                  <textarea name="message" class="form-control" rows="4"
+                            placeholder="Share why you're interested and how you'd like to collaborate." required></textarea>
+                </div>
+                <div class="modal-footer px-0 pb-0" style="border-top: 1px solid var(--border-default); padding-top: 1rem;">
+                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                          style="border-radius: 999px;">Cancel</button>
+                  <button type="submit" class="btn btn-primary btn-sm"
+                          style="border-radius: 999px;">Send message</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      <!-- Post a collab CTA card -->
+      {% if current_user.is_authenticated %}
+      <button class="post-collab-card" data-bs-toggle="modal" data-bs-target="#postCollabModal"
+              style="background: linear-gradient(135deg, var(--color-dark-amethyst), #3a1a55);">
+        <div class="post-collab-icon"><i class="bi bi-plus-lg"></i></div>
+        <h5>Post a collab call</h5>
+        <p>Let the community know you're looking for a creative partner.</p>
+      </button>
+      {% else %}
+      <a href="{{ url_for('auth.register') }}" class="post-collab-card">
+        <div class="post-collab-icon"><i class="bi bi-plus-lg"></i></div>
+        <h5>Post a collab call</h5>
+        <p>Join Creatora to connect with collaborators.</p>
+      </a>
+      {% endif %}
+
+    </div>
+
+    <!-- No results state -->
+    <div id="no-results" class="cb-empty" style="display:none;">
+      <i class="bi bi-people"></i>
+      <h5 style="color: var(--color-dark-amethyst); font-family: var(--font-heading);">No collabs found</h5>
+      <p>Try a different search term or role filter.</p>
+    </div>
+
+    {% else %}
+    <div class="cb-empty">
+      <i class="bi bi-people"></i>
+      <h5 style="color: var(--color-dark-amethyst); font-family: var(--font-heading);">No open collabs yet</h5>
+      <p>Be the first to post a collaboration call.</p>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary mt-3"
+         style="border-radius: 999px; padding: 0.6rem 1.75rem;">
+        Join & post a collab
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+
+<!-- ── HOW IT WORKS STRIP ── -->
+<section class="how-strip">
+  <div class="container">
+    <p style="color: rgba(255,235,237,0.45); font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">HOW IT WORKS</p>
+    <h2 style="color: white; font-family: var(--font-heading); font-size: 1.6rem; margin-bottom: 2rem;">Creativity thrives in collaboration.</h2>
+    <div class="row g-3">
+      {% for icon, title, desc in [
+        ('📢', 'Post a call', 'Share what you\'re working on and what kind of collaborator you need — role, location, and deadline.'),
+        ('🔍', 'Browse open calls', 'Filter by the role you play and find projects that fit your vibe, schedule, and location.'),
+        ('📩', 'Reach out directly', 'Send a short interest message through Creatora so the poster gets notified.'),
+        ('✨', 'Create together', 'Team up, make something great, and tag your shared project on Creatora when it\'s done.'),
+      ] %}
+      <div class="col-6 col-md-3">
+        <div class="how-card">
+          <div class="how-icon">{{ icon }}</div>
+          <h6>{{ title }}</h6>
+          <p>{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+<!-- ── JOIN CTA ── -->
+<section style="background: var(--color-lavender-blush); padding: 4rem 1rem; text-align: center;">
+  <div class="container">
+    <p style="color: var(--color-berry-blush); font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;">JOIN CREATORA</p>
+    <h2 style="font-family: var(--font-heading); font-size: 2.2rem; color: var(--color-dark-amethyst); margin-bottom: 0.75rem;">
+      Your next collab<br>is already out there.
+    </h2>
+    <p style="color: var(--text-secondary); max-width: 440px; margin: 0 auto 2rem;">
+      Join hundreds of visual creators building their brand and finding collaborators on Creatora.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="{{ url_for('auth.register') }}"
+         style="background: var(--color-dark-amethyst); color: white; padding: 0.75rem 2rem; border-radius: 999px; font-weight: 500; font-size: 0.95rem; text-decoration: none;">
+        Sign up free
+      </a>
+      <a href="{{ url_for('public.directory') }}"
+         style="background: transparent; color: var(--color-dark-amethyst); border: 1.5px solid var(--color-dark-amethyst); padding: 0.75rem 2rem; border-radius: 999px; font-weight: 500; font-size: 0.95rem; text-decoration: none;">
+        Browse creators
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<!-- ── Post a Collab Modal ── -->
+<div class="modal fade" id="postCollabModal" tabindex="-1" aria-labelledby="postCollabModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="postCollabModalLabel">Post a Collaboration Call</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{{ url_for('public.post_collab') }}">
+          <div class="mb-3">
+            <label class="form-label">Title <span style="color:var(--color-berry-blush)">*</span></label>
+            <input type="text" name="title" class="form-control"
+                   placeholder="e.g. Looking for a videographer for a brand campaign in June"
+                   required maxlength="120">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="3"
+                      placeholder="Tell creators what the project is about, what you're envisioning, and what you need from them."></textarea>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label">Role needed</label>
+              <select name="role_needed" class="form-select">
+                <option value="">Any role</option>
+                <option value="photographer">📸 Photographer</option>
+                <option value="videographer">🎬 Videographer</option>
+                <option value="digital_artist">🎨 Digital Artist</option>
+                <option value="influencer">📱 Influencer</option>
+                <option value="beauty">💄 Beauty Creator</option>
+                <option value="food">🍳 Food Creator</option>
+                <option value="stylist">👗 Stylist</option>
+                <option value="makeup_artist">💅 Makeup Artist</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Location</label>
+              <input type="text" name="location" class="form-control"
+                     placeholder="e.g. Tirana, Albania" maxlength="100">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Deadline</label>
+            <input type="date" name="deadline" class="form-control">
+            <div class="form-text" style="font-size:0.78rem; color: var(--text-secondary);">
+              Leave blank to keep the call open indefinitely.
+            </div>
+          </div>
+          <div class="modal-footer px-0 pb-0" style="border-top: 1px solid var(--border-default); padding-top: 1rem;">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                    style="border-radius: 999px;">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm"
+                    style="border-radius: 999px;">Post collab call</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ── Client-side search + role filter ──────────────────────────────────────
+const searchInput  = document.getElementById('collab-search');
+const grid         = document.getElementById('collabs-grid');
+const noResults    = document.getElementById('no-results');
+const countEl      = document.getElementById('collab-count');
+const rolePills    = document.querySelectorAll('.role-pill');
+
+let activeRole = '';
+
+function filterCards() {
+  if (!grid) return;
+  const q = (searchInput?.value || '').trim().toLowerCase();
+  const cards = grid.querySelectorAll('.collab-card');
+  let visible = 0;
+
+  cards.forEach(card => {
+    const title    = card.dataset.title    || '';
+    const role     = card.dataset.role     || '';
+    const location = card.dataset.location || '';
+
+    const matchSearch = !q || title.includes(q) || role.includes(q) || location.includes(q);
+    const matchRole   = !activeRole || role.includes(activeRole);
+
+    const show = matchSearch && matchRole;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  if (countEl) countEl.textContent = visible;
+  if (noResults) noResults.style.display = (visible === 0) ? 'block' : 'none';
+}
+
+if (searchInput) searchInput.addEventListener('input', filterCards);
+
+rolePills.forEach(pill => {
+  pill.addEventListener('click', () => {
+    rolePills.forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    activeRole = pill.dataset.role;
+    filterCards();
+  });
+});
+</script>
+
+{% endblock %}

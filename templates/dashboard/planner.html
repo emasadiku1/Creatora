@@ -1,0 +1,503 @@
+{% extends 'base.html' %}
+{% block title %}Content Planner — Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #F2EDF7; }
+  footer.footer-creatora { margin-top: 0 !important; }
+  .dash-page { min-height: 100vh; padding: 2rem 1rem 4rem; }
+
+  .back-link { font-size:.82rem; color:var(--text-secondary); text-decoration:none; display:inline-flex; align-items:center; gap:.35rem; margin-bottom:.35rem; }
+  .back-link:hover { color:var(--color-berry-blush); }
+  .page-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+  .page-header h1 { font-size:1.5rem; color:var(--color-dark-amethyst); font-family:var(--font-heading); margin:0; }
+
+  /* view toggle */
+  .view-toggle { display:flex; border:1.5px solid var(--border-default); border-radius:var(--radius-sm); overflow:hidden; background:white; }
+  .view-btn { background:transparent; border:none; padding:.4rem .9rem; font-size:.8rem; font-weight:500; color:var(--text-secondary); cursor:pointer; transition:all var(--transition-fast); }
+  .view-btn.active { background:var(--color-dark-amethyst); color:white; }
+
+  /* platform dots */
+  .platform-instagram { background:#E1306C; }
+  .platform-tiktok    { background:#010101; }
+  .platform-youtube   { background:#FF0000; }
+  .platform-other     { background:var(--color-berry-blush); }
+
+  /* ── LIST VIEW ── */
+  .list-section { margin-bottom:2rem; }
+  .list-section-label { font-size:.72rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.8px; margin-bottom:.75rem; padding-left:.25rem; }
+
+  .post-card { background:white; border-radius:var(--radius-md); border:1px solid var(--border-default); padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; margin-bottom:.6rem; box-shadow:var(--shadow-sm); transition:box-shadow var(--transition-fast),transform var(--transition-fast); }
+  .post-card:hover { box-shadow:var(--shadow-md); transform:translateY(-1px); }
+  .post-card:hover .post-card-actions { opacity:1; }
+
+  .platform-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .post-card-title { font-size:.9rem; font-weight:600; color:var(--color-dark-amethyst); margin:0 0 .2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:320px; }
+  .post-card-meta { font-size:.75rem; color:var(--text-secondary); margin:0; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+  .platform-label { font-size:.7rem; font-weight:600; padding:1px 8px; border-radius:999px; }
+
+  .status-pill { font-size:.68rem; font-weight:700; padding:2px 9px; border-radius:999px; text-transform:uppercase; letter-spacing:.4px; }
+  .pill-draft     { background:var(--color-almond-cream); color:var(--text-secondary); }
+  .pill-scheduled { background:#E6F1FB; color:#3078A4; }
+  .pill-published { background:var(--color-honeydew); color:#2a6b3c; }
+
+  .post-date { font-size:.78rem; color:var(--text-secondary); white-space:nowrap; flex-shrink:0; margin-left:auto; padding-right:.5rem; }
+  .post-card-actions { display:flex; gap:.4rem; opacity:0; transition:opacity var(--transition-fast); flex-shrink:0; }
+  .act-btn { background:transparent; border:1px solid var(--border-default); border-radius:var(--radius-sm); width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:.78rem; cursor:pointer; color:var(--text-secondary); transition:all var(--transition-fast); }
+  .act-btn:hover { border-color:var(--color-berry-blush); color:var(--color-berry-blush); background:var(--color-lavender-blush); }
+  .act-btn.delete:hover { border-color:#c0392b; color:#c0392b; background:#fde8e8; }
+
+  /* ── CALENDAR VIEW ── */
+  .calendar-wrap { background:white; border-radius:var(--radius-lg); border:1px solid var(--border-default); box-shadow:var(--shadow-sm); overflow:hidden; }
+  .cal-header { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.5rem; border-bottom:1px solid var(--border-default); }
+  .cal-header h3 { font-family:var(--font-heading); font-size:1.1rem; color:var(--color-dark-amethyst); margin:0; }
+  .cal-nav-btn { background:white; border:1px solid var(--border-default); border-radius:var(--radius-sm); width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-secondary); font-size:.9rem; transition:all var(--transition-fast); }
+  .cal-nav-btn:hover { border-color:var(--color-berry-blush); color:var(--color-berry-blush); }
+
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); }
+  .cal-day-label { text-align:center; font-size:.72rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; padding:.65rem 0; border-bottom:1px solid var(--border-default); letter-spacing:.5px; }
+  .cal-cell { min-height:90px; border-right:1px solid var(--border-default); border-bottom:1px solid var(--border-default); padding:.4rem; position:relative; transition:background var(--transition-fast); }
+  .cal-cell:nth-child(7n) { border-right:none; }
+  .cal-cell:hover { background:var(--color-lavender-blush); }
+  .cal-cell.today { background:#FFF5FC; }
+  .cal-cell.other-month { background:#fafafa; }
+  .cal-cell .day-num { font-size:.75rem; font-weight:600; color:var(--text-secondary); margin-bottom:.3rem; width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:50%; }
+  .cal-cell.today .day-num { background:var(--color-berry-blush); color:white; }
+  .cal-event { font-size:.65rem; font-weight:600; padding:2px 5px; border-radius:3px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
+
+  /* empty */
+  .planner-empty { text-align:center; padding:4rem 1rem; background:white; border-radius:var(--radius-lg); border:1px solid var(--border-default); box-shadow:var(--shadow-sm); }
+  .planner-empty .empty-icon { font-size:3rem; display:block; margin-bottom:1rem; }
+  .planner-empty h5 { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.3rem; margin-bottom:.5rem; }
+  .planner-empty p { font-size:.875rem; color:var(--text-secondary); max-width:360px; margin:0 auto; }
+
+  /* modal */
+  .modal-content { border-radius:var(--radius-lg); border:none; box-shadow:var(--shadow-lg); }
+  .modal-header { border-bottom:1px solid var(--border-default); padding:1.25rem 1.5rem; }
+  .modal-header .modal-title { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.15rem; }
+  .modal-body { padding:1.5rem; }
+  .modal-body .form-label { font-size:.85rem; font-weight:500; color:var(--text-primary); margin-bottom:.3rem; }
+  .modal-body .form-control, .modal-body .form-select { border-radius:var(--radius-sm); border-color:var(--border-default); font-size:.875rem; color:var(--text-primary); }
+  .modal-body .form-control:focus, .modal-body .form-select:focus { border-color:var(--color-berry-blush); box-shadow:0 0 0 3px rgba(163,62,126,.1); outline:none; }
+  .modal-footer { border-top:1px solid var(--border-default); padding:1rem 1.5rem; }
+
+  /* platform picker */
+  .platform-picker { display:flex; gap:.5rem; flex-wrap:wrap; }
+  .platform-opt { display:none; }
+  .platform-opt + label { display:flex; align-items:center; gap:.4rem; padding:.4rem .9rem; border-radius:999px; border:1.5px solid var(--border-default); font-size:.8rem; font-weight:500; cursor:pointer; transition:all var(--transition-fast); color:var(--text-secondary); }
+  .platform-opt:checked + label { border-color:var(--color-dark-amethyst); background:var(--color-dark-amethyst); color:white; }
+
+  @media(max-width:576px){
+    .cal-cell { min-height:60px; }
+    .cal-event { display:none; }
+    .post-card-title { max-width:160px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <a href="{{ url_for('dashboard.home') }}" class="back-link"><i class="bi bi-arrow-left"></i> Dashboard</a>
+        <h1>📅 Content Planner</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+        <div class="view-toggle">
+          <button class="view-btn active" id="btnList" onclick="switchView('list')"><i class="bi bi-list-ul me-1"></i>List</button>
+          <button class="view-btn" id="btnCal" onclick="switchView('calendar')"><i class="bi bi-calendar3 me-1"></i>Calendar</button>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPostModal"
+                style="border-radius:999px;padding:.55rem 1.5rem;font-size:.875rem;">
+          <i class="bi bi-plus-lg me-1"></i>Add post
+        </button>
+      </div>
+    </div>
+
+    {% if posts %}
+
+    <!-- ── LIST VIEW ── -->
+    <div id="listView">
+
+      {% set scheduled = posts|selectattr('status','equalto','scheduled')|list %}
+      {% set drafts    = posts|selectattr('status','equalto','draft')|list %}
+      {% set published = posts|selectattr('status','equalto','published')|list %}
+
+      {% if scheduled %}
+      <div class="list-section">
+        <p class="list-section-label">📆 Scheduled ({{ scheduled|length }})</p>
+        {% for post in scheduled %}
+        {% set pc = {'instagram':'#E1306C','tiktok':'#010101','youtube':'#FF0000'}.get(post.platform or '', '#A33E7E') %}
+        <div class="post-card">
+          <div class="platform-dot" style="background:{{ pc }};"></div>
+          <div style="flex:1;min-width:0;">
+            <p class="post-card-title">{{ post.title or '(Untitled post)' }}</p>
+            <div class="post-card-meta">
+              {% if post.platform %}
+              <span class="platform-label" style="background:{{ pc }}20;color:{{ pc }};">{{ post.platform|title }}</span>
+              {% endif %}
+              <span class="status-pill pill-scheduled">Scheduled</span>
+            </div>
+          </div>
+          <span class="post-date">
+            {% if post.scheduled %}{{ post.scheduled.strftime('%b %d, %H:%M') }}{% endif %}
+          </span>
+          <div class="post-card-actions">
+            <button class="act-btn" title="Edit"
+                    data-bs-toggle="modal" data-bs-target="#editPostModal"
+                    data-id="{{ post.id }}"
+                    data-title="{{ post.title or '' }}"
+                    data-platform="{{ post.platform or '' }}"
+                    data-status="{{ post.status }}"
+                    data-notes="{{ post.notes or '' }}"
+                    data-scheduled="{{ post.scheduled.strftime('%Y-%m-%dT%H:%M') if post.scheduled else '' }}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <form method="POST" action="{{ url_for('dashboard.delete_post', post_id=post.id) }}" style="margin:0;">
+              <button type="submit" class="act-btn delete" onclick="return confirm('Delete this post?')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if drafts %}
+      <div class="list-section">
+        <p class="list-section-label">📝 Drafts ({{ drafts|length }})</p>
+        {% for post in drafts %}
+        {% set pc = {'instagram':'#E1306C','tiktok':'#010101','youtube':'#FF0000'}.get(post.platform or '', '#A33E7E') %}
+        <div class="post-card">
+          <div class="platform-dot" style="background:{{ pc }};"></div>
+          <div style="flex:1;min-width:0;">
+            <p class="post-card-title">{{ post.title or '(Untitled post)' }}</p>
+            <div class="post-card-meta">
+              {% if post.platform %}
+              <span class="platform-label" style="background:{{ pc }}20;color:{{ pc }};">{{ post.platform|title }}</span>
+              {% endif %}
+              <span class="status-pill pill-draft">Draft</span>
+              {% if post.notes %}<span>· {{ post.notes[:40] }}{% if post.notes|length > 40 %}…{% endif %}</span>{% endif %}
+            </div>
+          </div>
+          <div class="post-card-actions">
+            <button class="act-btn" title="Edit"
+                    data-bs-toggle="modal" data-bs-target="#editPostModal"
+                    data-id="{{ post.id }}"
+                    data-title="{{ post.title or '' }}"
+                    data-platform="{{ post.platform or '' }}"
+                    data-status="{{ post.status }}"
+                    data-notes="{{ post.notes or '' }}"
+                    data-scheduled="{{ post.scheduled.strftime('%Y-%m-%dT%H:%M') if post.scheduled else '' }}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <form method="POST" action="{{ url_for('dashboard.delete_post', post_id=post.id) }}" style="margin:0;">
+              <button type="submit" class="act-btn delete" onclick="return confirm('Delete this post?')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if published %}
+      <div class="list-section">
+        <p class="list-section-label">✅ Published ({{ published|length }})</p>
+        {% for post in published %}
+        {% set pc = {'instagram':'#E1306C','tiktok':'#010101','youtube':'#FF0000'}.get(post.platform or '', '#A33E7E') %}
+        <div class="post-card" style="opacity:.7;">
+          <div class="platform-dot" style="background:{{ pc }};"></div>
+          <div style="flex:1;min-width:0;">
+            <p class="post-card-title">{{ post.title or '(Untitled post)' }}</p>
+            <div class="post-card-meta">
+              {% if post.platform %}
+              <span class="platform-label" style="background:{{ pc }}20;color:{{ pc }};">{{ post.platform|title }}</span>
+              {% endif %}
+              <span class="status-pill pill-published">Published</span>
+            </div>
+          </div>
+          <span class="post-date">
+            {% if post.scheduled %}{{ post.scheduled.strftime('%b %d') }}{% endif %}
+          </span>
+          <div class="post-card-actions">
+            <form method="POST" action="{{ url_for('dashboard.delete_post', post_id=post.id) }}" style="margin:0;">
+              <button type="submit" class="act-btn delete" onclick="return confirm('Delete this post?')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div><!-- /#listView -->
+
+    <!-- ── CALENDAR VIEW ── -->
+    <div id="calendarView" style="display:none;">
+      <div class="calendar-wrap">
+        <div class="cal-header">
+          <button class="cal-nav-btn" id="calPrev"><i class="bi bi-chevron-left"></i></button>
+          <h3 id="calMonthLabel"></h3>
+          <button class="cal-nav-btn" id="calNext"><i class="bi bi-chevron-right"></i></button>
+        </div>
+        <div class="cal-grid" id="calGrid">
+          {% for day in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}
+          <div class="cal-day-label">{{ day }}</div>
+          {% endfor %}
+          <!-- cells injected by JS -->
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+
+    <!-- Empty state -->
+    <div class="planner-empty">
+      <span class="empty-icon">📆</span>
+      <h5>Nothing planned yet</h5>
+      <p>Add your first post — schedule it, save it as a draft, or mark it published.</p>
+      <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addPostModal"
+              style="border-radius:999px;padding:.6rem 1.75rem;">
+        <i class="bi bi-plus-lg me-1"></i>Add your first post
+      </button>
+    </div>
+
+    {% endif %}
+
+  </div>
+</div>
+
+
+<!-- ADD POST MODAL -->
+<div class="modal fade" id="addPostModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Post</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('dashboard.add_post') }}">
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Title / idea</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Behind the scenes — golden hour shoot" maxlength="120">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Platform</label>
+            <div class="platform-picker">
+              <input type="radio" name="platform" id="p_ig" value="instagram" class="platform-opt">
+              <label for="p_ig">📸 Instagram</label>
+              <input type="radio" name="platform" id="p_tt" value="tiktok" class="platform-opt">
+              <label for="p_tt">🎵 TikTok</label>
+              <input type="radio" name="platform" id="p_yt" value="youtube" class="platform-opt">
+              <label for="p_yt">▶️ YouTube</label>
+              <input type="radio" name="platform" id="p_ot" value="other" class="platform-opt">
+              <label for="p_ot">🌐 Other</label>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label">Schedule date & time</label>
+              <input type="datetime-local" name="scheduled" class="form-control">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select">
+                <option value="draft">📝 Draft</option>
+                <option value="scheduled">📆 Scheduled</option>
+                <option value="published">✅ Published</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Notes / caption ideas</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="Caption, hashtags, ideas…"></textarea>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:999px;">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="border-radius:999px;">Save post</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT POST MODAL -->
+<div class="modal fade" id="editPostModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Post</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="editPostForm">
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Title / idea</label>
+            <input type="text" name="title" id="eptTitle" class="form-control" maxlength="120">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Platform</label>
+            <select name="platform" id="eptPlatform" class="form-select">
+              <option value="">— none —</option>
+              <option value="instagram">📸 Instagram</option>
+              <option value="tiktok">🎵 TikTok</option>
+              <option value="youtube">▶️ YouTube</option>
+              <option value="other">🌐 Other</option>
+            </select>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label">Schedule date & time</label>
+              <input type="datetime-local" name="scheduled" id="eptScheduled" class="form-control">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Status</label>
+              <select name="status" id="eptStatus" class="form-select">
+                <option value="draft">📝 Draft</option>
+                <option value="scheduled">📆 Scheduled</option>
+                <option value="published">✅ Published</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Notes / caption ideas</label>
+            <textarea name="notes" id="eptNotes" class="form-control" rows="3"></textarea>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:999px;">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="border-radius:999px;">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── View toggle ───────────────────────────────────────────────────────────────
+function switchView(v) {
+  document.getElementById('listView').style.display     = v === 'list'     ? '' : 'none';
+  document.getElementById('calendarView').style.display = v === 'calendar' ? '' : 'none';
+  document.getElementById('btnList').classList.toggle('active', v === 'list');
+  document.getElementById('btnCal').classList.toggle('active',  v === 'calendar');
+  if (v === 'calendar') renderCalendar();
+}
+
+// ── Edit modal populate ───────────────────────────────────────────────────────
+document.querySelectorAll('[data-bs-target="#editPostModal"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('eptTitle').value     = btn.dataset.title;
+    document.getElementById('eptPlatform').value  = btn.dataset.platform;
+    document.getElementById('eptStatus').value    = btn.dataset.status;
+    document.getElementById('eptNotes').value     = btn.dataset.notes;
+    document.getElementById('eptScheduled').value = btn.dataset.scheduled;
+    document.getElementById('editPostForm').action = '/dashboard/planner/' + btn.dataset.id + '/edit';
+  });
+});
+
+// ── Calendar ──────────────────────────────────────────────────────────────────
+// Build post lookup keyed by "YYYY-MM-DD"
+const postData = {
+  {% for post in posts %}
+  {% if post.scheduled %}
+  "{{ post.scheduled.strftime('%Y-%m-%d') }}": {
+    title: {{ (post.title or '(post)')|tojson }},
+    platform: {{ (post.platform or 'other')|tojson }},
+    status: {{ post.status|tojson }},
+  },
+  {% endif %}
+  {% endfor %}
+};
+
+const PLATFORM_COLORS = { instagram:'#E1306C', tiktok:'#111', youtube:'#FF0000', other:'#A33E7E' };
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+let calYear, calMonth;
+const today = new Date();
+
+function renderCalendar() {
+  if (!calYear) { calYear = today.getFullYear(); calMonth = today.getMonth(); }
+  document.getElementById('calMonthLabel').textContent = MONTHS[calMonth] + ' ' + calYear;
+
+  const grid = document.getElementById('calGrid');
+  // Remove old cells (keep the 7 day-label headers)
+  while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  // Monday-based offset
+  let startOffset = (firstDay.getDay() + 6) % 7;
+
+  // Prev month filler
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+  for (let i = startOffset - 1; i >= 0; i--) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell other-month';
+    cell.innerHTML = '<div class="day-num" style="opacity:.35;">' + (prevDays - i) + '</div>';
+    grid.appendChild(cell);
+  }
+
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cell = document.createElement('div');
+    const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+    cell.className = 'cal-cell' + (isToday ? ' today' : '');
+    cell.innerHTML = '<div class="day-num">' + d + '</div>';
+
+    const key = calYear + '-' + String(calMonth + 1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    if (postData[key]) {
+      const p = postData[key];
+      const color = PLATFORM_COLORS[p.platform] || '#A33E7E';
+      const ev = document.createElement('div');
+      ev.className = 'cal-event';
+      ev.style.cssText = 'background:' + color + '20;color:' + color + ';';
+      ev.textContent = p.title;
+      cell.appendChild(ev);
+    }
+    grid.appendChild(cell);
+  }
+
+  // Next month filler
+  const totalCells = startOffset + daysInMonth;
+  const remainder = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 1; i <= remainder; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell other-month';
+    cell.innerHTML = '<div class="day-num" style="opacity:.35;">' + i + '</div>';
+    grid.appendChild(cell);
+  }
+}
+
+document.getElementById('calPrev')?.addEventListener('click', () => {
+  calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+});
+document.getElementById('calNext')?.addEventListener('click', () => {
+  calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+});
+</script>
+{% endblock %}

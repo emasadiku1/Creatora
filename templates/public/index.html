@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% block title %}Creatora — Build Your Name. Share Your Vision.{% endblock %}
+
+{% block extra_css %}
+<style>
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* Responsive grids */
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+@media (max-width: 768px) {
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .hero-title { font-size: 2.2rem !important; }
+  .section-h2 { font-size: 1.6rem !important; }
+  .cta-h2 { font-size: 1.8rem !important; }
+}
+@media (max-width: 480px) {
+  .grid-3 { grid-template-columns: 1fr; }
+  .grid-4 { grid-template-columns: 1fr; }
+  .hero-title { font-size: 1.8rem !important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section style="background: var(--color-lavender-blush); padding: 5rem 1rem 4rem; text-align: center;">
+  <div class="container">
+    <span style="border: 1.5px solid var(--color-berry-blush); color: var(--color-berry-blush); font-size: 0.75rem; font-weight: 600; padding: 4px 16px; border-radius: 999px; letter-spacing: 1px;">+ For visual creators</span>
+    <h1 class="hero-title" style="font-size: 3.2rem; color: var(--color-dark-amethyst); margin: 1.5rem 0 1rem; line-height: 1.15;">Your creative business,<br><span style="color: var(--color-berry-blush);">all in one place</span></h1>
+    <p style="font-size: 1.1rem; color: var(--text-secondary); max-width: 500px; margin: 0 auto 2.5rem;">Portfolio, clients, content, and locations — built for photographers, videographers, artists, and more.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="{{ url_for('auth.register') }}" style="background: var(--color-dark-amethyst); color: white; padding: 0.75rem 2rem; border-radius: 999px; font-weight: 500; font-size: 0.95rem; text-decoration: none;">Get started free</a>
+      <a href="{{ url_for('public.directory') }}" style="background: transparent; color: var(--color-dark-amethyst); border: 1.5px solid var(--color-dark-amethyst); padding: 0.75rem 2rem; border-radius: 999px; font-weight: 500; font-size: 0.95rem; text-decoration: none;">Browse creators</a>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div style="background: var(--color-dark-amethyst); padding: 0.85rem 0; overflow: hidden; white-space: nowrap;">
+  <div style="display: inline-flex; gap: 2rem; animation: marquee 22s linear infinite;">
+    {% for role in ['PHOTOGRAPHER','VIDEOGRAPHER','DIGITAL ARTIST','INFLUENCER','BEAUTY CREATOR','FOOD CREATOR','ILLUSTRATOR','ARCHITECT','PHOTOGRAPHER','VIDEOGRAPHER','DIGITAL ARTIST','INFLUENCER','BEAUTY CREATOR','FOOD CREATOR'] %}
+      <span style="color: rgba(255,235,237,0.7); font-size: 0.75rem; font-weight: 600; letter-spacing: 2px;">{{ role }}</span>
+      <span style="color: var(--color-berry-blush);">+</span>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section style="background: var(--color-berry-blush); padding: 4rem 1rem;">
+  <div class="container">
+    <p style="color: rgba(255,255,255,0.7); font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">EVERYTHING YOU NEED</p>
+    <h2 class="section-h2" style="color: white; font-size: 2rem; margin-bottom: 0.5rem;">One platform, built for creators</h2>
+    <p style="color: rgba(255,255,255,0.75); margin-bottom: 2.5rem;">Every tool you've been juggling across five apps, finally in one place.</p>
+    <div class="grid-3">
+      {% for icon, title, desc in [
+        ('🗂️','Portfolio builder','Gallery, services & case studies'),
+        ('📍','SceneScout','Discover shooting locations'),
+        ('📅','Content planner','Schedule posts & campaigns'),
+        ('👥','Client CRM','Leads & project pipeline'),
+        ('📊','Analytics','Views, inquiries & top work'),
+        ('🔔','Notifications','Bookings & messages live'),
+      ] %}
+      <div style="background: rgba(255,255,255,0.12); border-radius: 16px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.2);">
+        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">{{ icon }}</div>
+        <h4 style="color: white; font-size: 1rem; margin-bottom: 0.25rem; font-family: var(--font-body); font-weight: 600;">{{ title }}</h4>
+        <p style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin: 0;">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ROLE DASHBOARDS -->
+<section style="background: var(--color-dark-amethyst); padding: 4rem 1rem;">
+  <div class="container">
+    <p style="color: var(--color-powder-blush); font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">YOUR ROLE, YOUR DASHBOARD</p>
+    <h2 class="section-h2" style="color: white; font-size: 2rem; margin-bottom: 0.5rem;">Built around how you actually work</h2>
+    <p style="color: rgba(255,235,237,0.65); margin-bottom: 2.5rem;">Pick your creator type and get a dashboard tailored to your workflow.</p>
+    <div class="grid-3">
+      {% for icon, role, desc in [
+        ('📸','Photographer','Locations, bookings & portfolio'),
+        ('🎬','Videographer','Projects, scenes & campaigns'),
+        ('🎨','Digital Artist','Commissions, cases & CRM'),
+        ('📱','Influencer','Content calendar & collabs'),
+        ('💄','Beauty Creator','Look book & bookings'),
+        ('🍳','Food Creator','Recipes, brands & shoots'),
+      ] %}
+      <div style="background: rgba(255,255,255,0.07); border-radius: 16px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.1); text-align: center;">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">{{ icon }}</div>
+        <h4 style="color: white; font-size: 0.95rem; margin-bottom: 0.25rem; font-family: var(--font-body); font-weight: 600;">{{ role }}</h4>
+        <p style="color: rgba(255,235,237,0.55); font-size: 0.8rem; margin: 0;">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- SCENESCOUT PREVIEW -->
+<section style="background: var(--color-pacific-cyan); padding: 4rem 1rem;">
+  <div class="container">
+    <p style="color: rgba(255,255,255,0.7); font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">SCENESCOUT</p>
+    <h2 class="section-h2" style="color: white; font-size: 2rem; margin-bottom: 0.5rem;">Discover shooting locations</h2>
+    <p style="color: rgba(255,255,255,0.75); margin-bottom: 2rem;">Community-powered spots shared by creators who actually know them.</p>
+    <div style="background: rgba(255,255,255,0.15); border-radius: 16px; height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.2); position: relative; overflow: hidden;">
+      <div style="position: absolute; top: 40%; left: 25%; width: 10px; height: 10px; background: var(--color-powder-blush); border-radius: 50%;"></div>
+      <div style="position: absolute; top: 30%; left: 60%; width: 10px; height: 10px; background: var(--color-powder-blush); border-radius: 50%;"></div>
+      <div style="position: absolute; top: 55%; left: 45%; width: 10px; height: 10px; background: var(--color-powder-blush); border-radius: 50%;"></div>
+      <div style="position: absolute; top: 25%; left: 75%; width: 10px; height: 10px; background: var(--color-powder-blush); border-radius: 50%;"></div>
+      <span style="background: white; color: var(--color-pacific-cyan); font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 999px;">📍 Tirana</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+      {% for name, detail, tag, tag_color in [
+        ('Rooftop Terrace','Golden hour · Low crowd','RoofTop','#A33E7E'),
+        ('Old Town Alley','All-day light · Urban','Urban','#27153D'),
+        ('Lakeside Trail','Sunrise · Very quiet','Nature','#3E828E'),
+        ('Bloom Café','Morning light · Cozy','Café','#A33E7E'),
+      ] %}
+      <div style="background: white; border-radius: 12px; padding: 1rem;">
+        <h5 style="font-size: 0.9rem; color: var(--color-dark-amethyst); margin-bottom: 0.2rem; font-family: var(--font-body); font-weight: 600;">{{ name }}</h5>
+        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem;">{{ detail }}</p>
+        <span style="background: {{ tag_color }}; color: white; font-size: 0.7rem; padding: 2px 10px; border-radius: 999px;">{{ tag }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section style="background: var(--color-berry-blush); padding: 3rem 1rem; text-align: center;">
+  <div class="container">
+    <div class="grid-4">
+      {% for num, label in [('500+','Creators'),('1.2K','Projects'),('80+','Locations'),('300+','Collabs')] %}
+      <div>
+        <p style="font-size: 2.5rem; font-weight: 700; color: white; margin: 0; font-family: var(--font-heading);">{{ num }}</p>
+        <p style="color: rgba(255,255,255,0.75); font-size: 0.9rem; margin: 0;">{{ label }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+<!-- CREATOR SHELF PREVIEW -->
+<section style="padding: 4rem 1rem; background: var(--color-lavender-blush);">
+  <div class="container">
+    <p style="color: var(--color-berry-blush); font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">SHOP CREATOR TOOLS</p>
+    <h2 class="section-h2" style="font-size: 2rem; color: var(--color-dark-amethyst); margin-bottom: 0.5rem;">Purchase presets, guides & templates</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Visitors can now buy or download published items directly from creator shelves.</p>
+    {% if shelf_items %}
+    <div class="shelf-grid">
+      {% for item in shelf_items %}
+      <article class="shelf-card">
+        <div class="shelf-card__cover">
+          {% if item.cover_image %}
+            <img src="{{ url_for('static', filename='images/uploads/' ~ item.cover_image) }}" alt="{{ item.title }}">
+          {% else %}
+            <div class="shelf-card__cover-placeholder"><span>{{ item.file_type | upper }}</span></div>
+          {% endif %}
+          <span class="shelf-card__badge shelf-card__badge--{{ 'free' if item.is_free else 'paid' }}">
+            {{ 'Free' if item.is_free else item.currency ~ ' ' ~ '%.2f' | format(item.price) }}
+          </span>
+        </div>
+        <div class="shelf-card__body">
+          <span class="shelf-card__category">{{ item.category | replace('_',' ') | title }}</span>
+          <h3 class="shelf-card__title">{{ item.title }}</h3>
+          <p class="shelf-card__meta">by {{ item.creator.display_name or item.creator.username }}</p>
+          <a href="{{ url_for('shelf_download', item_id=item.id) }}" class="btn btn-primary btn-full">
+            {{ 'Download free' if item.is_free else 'Buy now' }}
+          </a>
+          <a href="{{ url_for('public.creator_shelf', username=item.creator.username) }}" class="shelf-card__creator-link">View creator shelf →</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p>No shelf items are published yet. Registered creators can add them from their dashboard.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- FEATURED CREATORS -->
+<section style="padding: 4rem 1rem; background: white;">
+  <div class="container">
+    <p style="color: var(--color-berry-blush); font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">DISCOVER TALENT</p>
+    <h2 class="section-h2" style="font-size: 2rem; color: var(--color-dark-amethyst); margin-bottom: 0.5rem;">Browse creators</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Find the perfect creative for your next project.</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem;">
+      {% if featured %}
+        {% for creator in featured %}
+        <a href="{{ url_for('public.profile', username=creator.username) }}" style="text-decoration: none;">
+          <div style="background: var(--color-lavender-blush); border-radius: 16px; padding: 1.5rem; text-align: center; border: 1px solid var(--border-default);">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--color-berry-blush); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.2rem; color: white; font-weight: 700;">
+              {{ (creator.display_name or creator.username)[0] | upper }}
+            </div>
+            <h5 style="font-size: 0.88rem; color: var(--color-dark-amethyst); margin-bottom: 0.2rem; font-family: var(--font-body); font-weight: 600;">{{ creator.display_name or creator.username }}</h5>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">{{ creator.role | replace('_',' ') | title }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      {% else %}
+        {% for name, role in [('Sofia M.','Photographer'),('Luca V.','Videographer'),('Aria K.','Beauty Creator'),('Marco D.','Food Creator')] %}
+        <div style="background: var(--color-lavender-blush); border-radius: 16px; padding: 1.5rem; text-align: center; border: 1px solid var(--border-default);">
+          <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--color-muted-teal); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.2rem; color: white; font-weight: 700;">{{ name[0] }}</div>
+          <h5 style="font-size: 0.88rem; color: var(--color-dark-amethyst); margin-bottom: 0.2rem; font-family: var(--font-body); font-weight: 600;">{{ name }}</h5>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">{{ role }}</p>
+        </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="{{ url_for('public.directory') }}" style="background: var(--color-dark-amethyst); color: white; padding: 0.75rem 2rem; border-radius: 999px; font-weight: 500; text-decoration: none; font-size: 0.95rem;">Browse all creators</a>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section style="padding: 5rem 1rem; background: var(--color-lavender-blush); text-align: center;">
+  <div class="container">
+    <p style="color: var(--color-berry-blush); font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1rem;">JOIN CREATORA</p>
+    <h2 class="cta-h2" style="font-size: 2.5rem; color: var(--color-dark-amethyst); margin-bottom: 1rem;">Ready to grow your<br>creative business?</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Join hundreds of visual creators already building their brand on Creatora.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="{{ url_for('auth.register') }}" style="background: var(--color-dark-amethyst); color: white; padding: 0.75rem 2rem; border-radius: 999px; font-weight: 500; text-decoration: none;">Sign up free</a>
+      <a href="{{ url_for('public.scenescout') }}" style="background: transparent; color: var(--color-dark-amethyst); border: 1.5px solid var(--color-dark-amethyst); padding: 0.75rem 2rem; border-radius: 999px; font-weight: 500; text-decoration: none;">See how it works</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

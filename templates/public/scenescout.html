@@ -1,0 +1,608 @@
+{% extends 'base.html' %}
+{% block title %}SceneScout — Discover Shooting Locations{% endblock %}
+
+{% block extra_css %}
+<style>
+  footer.footer-creatora { margin-top: 0 !important; }
+
+  /* ── Hero ── */
+  .ss-hero {
+    background: var(--color-pacific-cyan);
+    background: linear-gradient(135deg, #2a6d78 0%, var(--color-pacific-cyan) 50%, #3a8e7a 100%);
+    padding: 3.5rem 1rem 2.5rem;
+    text-align: center;
+  }
+  .ss-hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.9);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.2);
+    margin-bottom: 1rem;
+  }
+  .ss-hero h1 {
+    font-family: var(--font-heading);
+    font-size: 2.8rem;
+    color: white;
+    margin-bottom: 0.75rem;
+    line-height: 1.15;
+  }
+  .ss-hero p {
+    color: rgba(255,255,255,0.75);
+    font-size: 1rem;
+    max-width: 480px;
+    margin: 0 auto 2rem;
+  }
+
+  /* ── Search ── */
+  .ss-search-wrap {
+    position: relative;
+    max-width: 520px;
+    margin: 0 auto 1.25rem;
+  }
+  .ss-search-wrap input {
+    width: 100%;
+    padding: 0.75rem 1.25rem 0.75rem 3rem;
+    border-radius: 999px;
+    border: none;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 0.95rem;
+    outline: none;
+    transition: background var(--transition-fast);
+  }
+  .ss-search-wrap input::placeholder { color: rgba(255,255,255,0.45); }
+  .ss-search-wrap input:focus { background: rgba(255,255,255,0.22); }
+  .ss-search-wrap .bi-search {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.5);
+    font-size: 1rem;
+  }
+
+  /* ── Category filter pills ── */
+  .cat-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  .cat-pill {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 5px 16px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+  .cat-pill:hover {
+    background: rgba(255,255,255,0.2);
+    color: white;
+  }
+  .cat-pill.active {
+    background: white;
+    color: var(--color-pacific-cyan);
+    border-color: white;
+    font-weight: 600;
+  }
+
+  /* ── Map section ── */
+  .ss-map-section {
+    background: #2f7a86;
+    padding: 0;
+  }
+  #scenescout-map {
+    width: 100%;
+    height: 380px;
+    display: block;
+  }
+
+  /* ── Results bar ── */
+  .ss-results-bar {
+    background: white;
+    border-bottom: 1px solid var(--border-default);
+    padding: 0.9rem 0;
+  }
+
+  /* ── Locations grid ── */
+  .locations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* ── Location card ── */
+  .loc-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+  .loc-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    color: inherit;
+  }
+  .loc-card-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background: var(--color-soft-blush);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+  }
+  .loc-card-body {
+    padding: 1.1rem 1.25rem 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .loc-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+  }
+  .loc-card-name {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-dark-amethyst);
+    line-height: 1.2;
+  }
+  .loc-card-desc {
+    color: var(--text-secondary);
+    font-size: 0.83rem;
+    line-height: 1.5;
+    margin-bottom: 0.9rem;
+    flex: 1;
+  }
+  .loc-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+  }
+  .loc-card-meta i { font-size: 0.8rem; }
+  .loc-card-meta .meta-dot { color: var(--color-almond-cream); }
+
+  /* Category badge */
+  .cat-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  .cat-badge.rooftop   { background: #fde8d8; color: #a35a2a; }
+  .cat-badge.urban     { background: #e0e7f8; color: #2a4a9e; }
+  .cat-badge.nature    { background: #e2f5e4; color: #2a7a3a; }
+  .cat-badge.cafe      { background: #fdf0e0; color: #a36a2a; }
+  .cat-badge.studio    { background: #ede0f5; color: #6a2a9e; }
+  .cat-badge.beach     { background: #e0f4fb; color: #1a7a9e; }
+  .cat-badge.other     { background: var(--color-soft-blush); color: var(--color-berry-blush); }
+
+  /* Crowd badge */
+  .crowd-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .crowd-low    { background: #e2f5e4; color: #2a7a3a; }
+  .crowd-medium { background: #fdf0e0; color: #a36a2a; }
+  .crowd-high   { background: #fde8e8; color: #9e2a2a; }
+
+  /* ── Vibe tag ── */
+  .vibe-tag {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-style: italic;
+  }
+
+  /* ── Add location CTA ── */
+  .add-loc-card {
+    background: var(--color-lavender-blush);
+    border: 2px dashed var(--color-powder-blush);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    min-height: 260px;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    text-decoration: none;
+    color: inherit;
+  }
+  .add-loc-card:hover {
+    background: white;
+    border-color: var(--color-berry-blush);
+    color: inherit;
+  }
+  .add-loc-icon {
+    width: 52px;
+    height: 52px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+    color: var(--color-berry-blush);
+  }
+  .add-loc-card h5 {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: var(--color-dark-amethyst);
+    margin-bottom: 0.35rem;
+  }
+  .add-loc-card p {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* ── Empty state ── */
+  .ss-empty {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--text-secondary);
+  }
+  .ss-empty i { font-size: 3rem; color: var(--color-powder-blush); margin-bottom: 1rem; display: block; }
+
+  /* ── Tip strip ── */
+  .tip-strip {
+    background: var(--color-dark-amethyst);
+    padding: 2.5rem 1rem;
+  }
+  .tip-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .tip-card .tip-icon { font-size: 1.6rem; margin-bottom: 0.6rem; }
+  .tip-card h6 { color: white; font-family: var(--font-body); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; }
+  .tip-card p { color: rgba(255,235,237,0.6); font-size: 0.8rem; margin: 0; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .ss-hero h1 { font-size: 2rem; }
+    #scenescout-map { height: 260px; }
+    .locations-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="ss-hero">
+  <div class="container">
+    <span class="ss-hero-badge">SceneScout</span>
+    <h1>Discover shooting locations</h1>
+    <p>Community-powered spots shared by creators who actually know them.</p>
+
+    <!-- Search -->
+    <div class="ss-search-wrap">
+      <i class="bi bi-search"></i>
+      <input type="text" id="loc-search" placeholder="Search by name, vibe, or category..." autocomplete="off">
+    </div>
+
+    <!-- Category filters -->
+    <div class="cat-filters">
+      <a href="{{ url_for('public.scenescout') }}"
+         class="cat-pill {% if not active_cat %}active{% endif %}">All</a>
+      {% for cat, emoji in [('rooftop','🏙️'), ('urban','🏛️'), ('nature','🌿'), ('cafe','☕'), ('studio','🎨'), ('beach','🌊')] %}
+      <a href="{{ url_for('public.scenescout', cat=cat) }}"
+         class="cat-pill {% if active_cat == cat %}active{% endif %}">{{ emoji }} {{ cat|title }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- MAP -->
+<div class="ss-map-section">
+  <div id="scenescout-map"></div>
+</div>
+
+<!-- RESULTS BAR -->
+<div class="ss-results-bar">
+  <div class="container d-flex align-items-center justify-content-between">
+    <span style="font-size: 0.88rem; color: var(--text-secondary);">
+      <strong id="loc-count" style="color: var(--text-primary);">{{ locations|length }}</strong> location{{ 's' if locations|length != 1 else '' }}
+    </span>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('dashboard.my_locations') }}"
+       style="font-size: 0.82rem; color: var(--color-berry-blush); font-weight: 600; text-decoration: none;">
+      <i class="bi bi-plus-circle me-1"></i>Add a location
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- LOCATIONS GRID -->
+<section style="background: var(--color-lavender-blush); padding: 2.5rem 1rem 3rem;">
+  <div class="container">
+
+    {% if locations %}
+    <div class="locations-grid" id="locations-grid">
+
+      {% for loc in locations %}
+      <div class="loc-card" data-name="{{ loc.name|lower }}" data-cat="{{ loc.category|lower }}" data-vibe="{{ (loc.vibe or '')|lower }}">
+        <!-- Image placeholder with emoji based on category -->
+        <div class="loc-card-img">
+          {% if loc.image %}
+            <img src="{{ url_for('static', filename='images/uploads/' ~ loc.image) }}" alt="{{ loc.name }}" style="width:100%;height:180px;object-fit:cover;">
+          {% else %}
+            {% if loc.category == 'rooftop' %}🏙️
+            {% elif loc.category == 'urban' %}🏛️
+            {% elif loc.category == 'nature' %}🌿
+            {% elif loc.category == 'cafe' %}☕
+            {% elif loc.category == 'studio' %}🎨
+            {% elif loc.category == 'beach' %}🌊
+            {% else %}📍
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <div class="loc-card-body">
+          <div class="loc-card-top">
+            <span class="loc-card-name">{{ loc.name }}</span>
+            <span class="cat-badge {{ loc.category|lower }}">{{ loc.category|replace('_',' ')|title }}</span>
+          </div>
+
+          {% if loc.vibe %}
+          <div class="vibe-tag mb-1">✦ {{ loc.vibe|title }}</div>
+          {% endif %}
+
+          <p class="loc-card-desc">{{ loc.description or 'A great spot for shooting.' }}</p>
+
+          <div class="loc-card-meta">
+            {% if loc.best_time %}
+            <i class="bi bi-clock"></i> {{ loc.best_time }}
+            <span class="meta-dot">·</span>
+            {% endif %}
+            {% if loc.crowd_level %}
+            <span class="crowd-badge crowd-{{ loc.crowd_level }}">
+              {% if loc.crowd_level == 'low' %}🟢{% elif loc.crowd_level == 'medium' %}🟡{% else %}🔴{% endif %}
+              {{ loc.crowd_level|title }} crowd
+            </span>
+            {% endif %}
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between" style="margin-top: auto;">
+            <div style="font-size: 0.78rem; color: var(--text-secondary);">
+              <i class="bi bi-person-circle me-1"></i>
+              {% if loc.creator %}
+                <a href="{{ url_for('public.profile', username=loc.creator.username) }}"
+                   style="color:inherit;text-decoration:none;font-weight:500;">
+                  {{ loc.creator.display_name or loc.creator.username }}
+                </a>
+              {% else %}Community{% endif %}
+            </div>
+            {% if loc.lat and loc.lng %}
+            <a href="https://maps.google.com/?q={{ loc.lat }},{{ loc.lng }}" target="_blank" rel="noopener"
+               style="font-size: 0.78rem; color: var(--color-pacific-cyan); text-decoration: none; font-weight: 500;">
+              <i class="bi bi-map me-1"></i>Open in Maps
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      <!-- Add location CTA -->
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard.my_locations') }}" class="add-loc-card">
+        <div class="add-loc-icon"><i class="bi bi-plus-lg"></i></div>
+        <h5>Share a location</h5>
+        <p>Know a great spot? Add it to the community map.</p>
+      </a>
+      {% else %}
+      <a href="{{ url_for('auth.register') }}" class="add-loc-card">
+        <div class="add-loc-icon"><i class="bi bi-plus-lg"></i></div>
+        <h5>Share a location</h5>
+        <p>Join Creatora to add your favourite shooting spots.</p>
+      </a>
+      {% endif %}
+
+    </div>
+
+    <!-- No results state (hidden by default, shown via JS) -->
+    <div id="no-results" class="ss-empty" style="display:none;">
+      <i class="bi bi-geo-alt-fill"></i>
+      <h5 style="color: var(--color-dark-amethyst); font-family: var(--font-heading);">No locations found</h5>
+      <p>Try a different search term or category.</p>
+    </div>
+
+    {% else %}
+    <div class="ss-empty">
+      <i class="bi bi-geo-alt-fill"></i>
+      <h5 style="color: var(--color-dark-amethyst); font-family: var(--font-heading);">No locations yet</h5>
+      <p>Be the first to share a shooting spot with the community.</p>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary mt-3" style="border-radius: 999px; padding: 0.6rem 1.75rem;">Join & add a location</a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<!-- TIPS STRIP -->
+<section class="tip-strip">
+  <div class="container">
+    <p style="color: rgba(255,235,237,0.5); font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">HOW IT WORKS</p>
+    <h2 style="color: white; font-family: var(--font-heading); font-size: 1.6rem; margin-bottom: 2rem;">Scout smarter, shoot better</h2>
+    <div class="row g-3">
+      {% for icon, title, desc in [
+        ('🗺️', 'Browse the map', 'See all community-shared spots pinned on an interactive map. Filter by category or vibe.'),
+        ('📍', 'Read insider tips', 'Every location includes best shooting time, crowd level, and notes from the creator who scouted it.'),
+        ('✨', 'Share your spots', 'Join Creatora and add the hidden gems you\'ve discovered. Help other creators find magic.'),
+        ('🤝', 'Collab on location', 'Found the perfect spot? Use the Collabs feature to invite other creators to shoot together.'),
+      ] %}
+      <div class="col-6 col-md-3">
+        <div class="tip-card">
+          <div class="tip-icon">{{ icon }}</div>
+          <h6>{{ title }}</h6>
+          <p>{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- JOIN CTA -->
+<section style="background: var(--color-lavender-blush); padding: 4rem 1rem; text-align: center;">
+  <div class="container">
+    <p style="color: var(--color-berry-blush); font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;">JOIN CREATORA</p>
+    <h2 style="font-family: var(--font-heading); font-size: 2.2rem; color: var(--color-dark-amethyst); margin-bottom: 0.75rem;">Know a great location?<br>Share it with the community.</h2>
+    <p style="color: var(--text-secondary); max-width: 440px; margin: 0 auto 2rem;">Join hundreds of visual creators already building their brand on Creatora.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="{{ url_for('auth.register') }}"
+         style="background: var(--color-dark-amethyst); color: white; padding: 0.75rem 2rem; border-radius: 999px; font-weight: 500; font-size: 0.95rem; text-decoration: none;">
+        Sign up free
+      </a>
+      <a href="{{ url_for('public.directory') }}"
+         style="background: transparent; color: var(--color-dark-amethyst); border: 1.5px solid var(--color-dark-amethyst); padding: 0.75rem 2rem; border-radius: 999px; font-weight: 500; font-size: 0.95rem; text-decoration: none;">
+        Browse creators
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<!-- Leaflet.js for the map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// ── Map initialisation ──────────────────────────────────────────────────────
+const locations = [
+  {% for loc in locations %}
+  {% if loc.lat and loc.lng %}
+  {
+    name: {{ loc.name | tojson }},
+    lat:  {{ loc.lat }},
+    lng:  {{ loc.lng }},
+    cat:  {{ (loc.category or 'other') | tojson }},
+    vibe: {{ (loc.vibe or '') | tojson }},
+    creator: {{ ((loc.creator.display_name or loc.creator.username) if loc.creator else 'Community') | tojson }},
+    profileUrl: {{ (url_for('public.profile', username=loc.creator.username) if loc.creator else '') | tojson }},
+  },
+  {% endif %}
+  {% endfor %}
+];
+
+const map = L.map('scenescout-map', {
+  center: locations.length ? [locations[0].lat, locations[0].lng] : [41.3275, 19.8187],
+  zoom: 14,
+  zoomControl: true,
+  scrollWheelZoom: false,
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap, © CARTO',
+  subdomains: 'abcd',
+  maxZoom: 19,
+}).addTo(map);
+
+// Custom pink marker
+const pinkIcon = L.divIcon({
+  className: '',
+  html: `<div style="
+    background: #A33E7E;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2.5px solid white;
+    box-shadow: 0 2px 8px rgba(163,62,126,0.5);
+  "></div>`,
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+  popupAnchor: [0, -10],
+});
+
+locations.forEach(loc => {
+  const marker = L.marker([loc.lat, loc.lng], { icon: pinkIcon }).addTo(map);
+  const creatorLink = loc.profileUrl
+    ? `<br><a href="${loc.profileUrl}" style="font-size:0.75rem;color:#A33E7E;text-decoration:none;">by ${loc.creator}</a>`
+    : '';
+  marker.bindPopup(`
+    <div style="font-family: Inter, sans-serif; min-width: 140px;">
+      <strong style="font-size: 0.9rem; color: #27153D;">${loc.name}</strong><br>
+      ${creatorLink}
+      <span style="font-size: 0.75rem; color: #5a4a6b; text-transform: capitalize;">${loc.cat}${loc.vibe ? ' · ' + loc.vibe : ''}</span>
+    </div>
+  `, { maxWidth: 200 });
+});
+
+// Fit map to all markers if more than one
+if (locations.length > 1) {
+  const bounds = L.latLngBounds(locations.map(l => [l.lat, l.lng]));
+  map.fitBounds(bounds, { padding: [40, 40] });
+}
+
+// ── Client-side search filter ───────────────────────────────────────────────
+const searchInput = document.getElementById('loc-search');
+const grid = document.getElementById('locations-grid');
+const noResults = document.getElementById('no-results');
+const locCount = document.getElementById('loc-count');
+
+function filterCards() {
+  if (!grid) return;
+  const q = searchInput.value.trim().toLowerCase();
+  const cards = grid.querySelectorAll('.loc-card');
+  let visible = 0;
+
+  cards.forEach(card => {
+    const name = card.dataset.name || '';
+    const cat  = card.dataset.cat  || '';
+    const vibe = card.dataset.vibe || '';
+    const match = !q || name.includes(q) || cat.includes(q) || vibe.includes(q);
+    card.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+
+  if (locCount) locCount.textContent = visible;
+  if (noResults) noResults.style.display = visible === 0 ? 'block' : 'none';
+}
+
+if (searchInput) searchInput.addEventListener('input', filterCards);
+</script>
+{% endblock %}

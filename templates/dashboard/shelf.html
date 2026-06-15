@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block title %}My Shelf - Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background:#F2EDF7; }
+  footer.footer-creatora { margin-top:0 !important; }
+  .dash-page { min-height:100vh; padding:2rem 1rem 4rem; }
+
+  .page-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+  .page-header h1 { font-size:1.5rem; color:var(--color-dark-amethyst); font-family:var(--font-heading); margin:0; }
+  .page-header .subtitle { color:var(--text-secondary); font-size:.9rem; margin:.3rem 0 0; }
+  .back-link { font-size:.82rem; color:var(--text-secondary); text-decoration:none; display:inline-flex; align-items:center; gap:.35rem; margin-bottom:.35rem; }
+  .back-link:hover { color:var(--color-berry-blush); }
+  .header-actions { display:flex; gap:.75rem; flex-wrap:wrap; }
+
+  .shelf-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.25rem; }
+  .shelf-card { position:relative; background:white; border:1px solid var(--border-default); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; transition:box-shadow var(--transition-normal), transform var(--transition-normal); }
+  .shelf-card:hover { box-shadow:var(--shadow-md); transform:translateY(-3px); }
+  .shelf-card--draft { border-style:dashed; }
+  .shelf-card__cover { position:relative; aspect-ratio:4/3; background:var(--color-soft-blush); overflow:hidden; }
+  .shelf-card__cover img { width:100%; height:100%; object-fit:cover; display:block; }
+  .shelf-card__cover-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  .shelf-card__cover-placeholder span { color:var(--color-berry-blush); font-weight:700; letter-spacing:.08em; font-size:.85rem; }
+  .shelf-card__badge { position:absolute; top:.7rem; left:.7rem; border-radius:999px; color:white; font-size:.72rem; font-weight:700; padding:.22rem .7rem; }
+  .shelf-card__badge--free { background:var(--color-pacific-cyan); }
+  .shelf-card__badge--paid { background:var(--color-berry-blush); }
+  .shelf-card__body { padding:1rem 1.15rem; }
+  .shelf-card__category { display:inline-block; background:var(--color-soft-blush); color:var(--color-berry-blush); font-size:.7rem; font-weight:600; padding:2px 9px; border-radius:999px; margin-bottom:.55rem; text-transform:capitalize; }
+  .shelf-card__title { font-family:var(--font-body); font-size:.95rem; font-weight:700; color:var(--color-dark-amethyst); margin:0 0 .35rem; }
+  .shelf-card__meta, .shelf-card__downloads { color:var(--text-secondary); font-size:.78rem; margin:0; }
+  .shelf-card__downloads { margin-top:.4rem; }
+  .shelf-card__actions { display:flex; align-items:center; gap:.6rem; padding:0 1.15rem 1.15rem; flex-wrap:wrap; }
+  .shelf-card__actions form { margin:0; }
+  .shelf-card__draft-label { position:absolute; top:.75rem; right:.75rem; background:white; color:var(--color-dark-amethyst); border:1px solid var(--border-default); border-radius:999px; padding:.16rem .55rem; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+
+  .shelf-empty { text-align:center; padding:4rem 1rem; background:white; border-radius:var(--radius-lg); border:1px solid var(--border-default); box-shadow:var(--shadow-sm); }
+  .shelf-empty .empty-icon { font-size:3rem; display:block; margin-bottom:1rem; }
+  .shelf-empty h5 { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.3rem; margin-bottom:.5rem; }
+  .shelf-empty p { font-size:.875rem; color:var(--text-secondary); max-width:360px; margin:0 auto; }
+
+  .modal-content { border-radius:var(--radius-lg); border:none; box-shadow:var(--shadow-lg); }
+  .modal-header { border-bottom:1px solid var(--border-default); padding:1.25rem 1.5rem; }
+  .modal-header .modal-title { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.15rem; }
+  .modal-body { padding:1.5rem; }
+  .modal-body .form-label { font-size:.85rem; font-weight:500; color:var(--text-primary); margin-bottom:.3rem; }
+  .modal-body .form-control, .modal-body .form-select { border-radius:var(--radius-sm); border-color:var(--border-default); font-size:.875rem; color:var(--text-primary); }
+  .modal-body .form-control:focus, .modal-body .form-select:focus { border-color:var(--color-berry-blush); box-shadow:0 0 0 3px rgba(163,62,126,.1); outline:none; }
+  .modal-footer { border-top:1px solid var(--border-default); padding:1rem 1.5rem; }
+  .form-hint { color:var(--text-secondary); display:block; font-size:.75rem; margin-top:.35rem; }
+  .optional { color:var(--text-secondary); font-weight:400; }
+
+  @media(max-width:576px) {
+    .header-actions { width:100%; }
+    .header-actions .btn { flex:1 1 auto; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <a href="{{ url_for('dashboard.home') }}" class="back-link"><i class="bi bi-arrow-left"></i> Dashboard</a>
+        <h1>My Digital Shelf</h1>
+        <p class="subtitle">Sell or share your presets, templates, guides and more.</p>
+      </div>
+      <div class="header-actions">
+        <a href="{{ url_for('public.creator_shelf', username=current_user.username) }}" class="btn btn-secondary">
+          View public shelf
+        </a>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addShelfItemModal">
+          <i class="bi bi-plus-lg me-1"></i>Add item
+        </button>
+      </div>
+    </div>
+
+    {% if items %}
+    <div class="shelf-grid">
+      {% for item in items %}
+      <div class="shelf-card {% if not item.is_published %}shelf-card--draft{% endif %}">
+        <div class="shelf-card__cover">
+          {% if item.cover_image %}
+            <img src="{{ url_for('static', filename='images/uploads/' ~ item.cover_image) }}" alt="{{ item.title }}" loading="lazy">
+          {% else %}
+            <div class="shelf-card__cover-placeholder">
+              <span>{{ item.file_type | upper }}</span>
+            </div>
+          {% endif %}
+          <span class="shelf-card__badge shelf-card__badge--{{ 'free' if item.is_free else 'paid' }}">
+            {{ 'Free' if item.is_free else item.currency ~ ' ' ~ '%.2f' | format(item.price) }}
+          </span>
+        </div>
+
+        <div class="shelf-card__body">
+          <span class="shelf-card__category">{{ item.category | replace('_',' ') }}</span>
+          <h3 class="shelf-card__title">{{ item.title }}</h3>
+          <p class="shelf-card__meta">
+            {{ item.file_name }}{% if item.file_size %} &middot; {{ (item.file_size / 1024) | round(1) }} KB{% endif %}
+          </p>
+          <p class="shelf-card__downloads"><i class="bi bi-download me-1"></i>{{ item.download_count }} downloads</p>
+        </div>
+
+        <div class="shelf-card__actions">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#editShelfItemModal{{ item.id }}">
+            Edit
+          </button>
+          <form method="POST" action="{{ url_for('dashboard.shelf_toggle', item_id=item.id) }}">
+            <button type="submit" class="btn btn-sm {% if item.is_published %}btn-secondary{% else %}btn-primary{% endif %}">
+              {{ 'Unpublish' if item.is_published else 'Publish' }}
+            </button>
+          </form>
+          <form method="POST" action="{{ url_for('dashboard.shelf_delete', item_id=item.id) }}"
+                onsubmit="return confirm('Delete {{ item.title }}? This cannot be undone.')">
+            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+        </div>
+
+        {% if not item.is_published %}
+          <div class="shelf-card__draft-label">Draft</div>
+        {% endif %}
+      </div>
+
+      <div class="modal fade" id="editShelfItemModal{{ item.id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Shelf Item</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('dashboard.shelf_edit', item_id=item.id) }}" enctype="multipart/form-data">
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label">Title <span style="color:var(--color-berry-blush)">*</span></label>
+                  <input type="text" name="title" class="form-control" value="{{ item.title }}" required maxlength="140">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Description</label>
+                  <textarea name="description" class="form-control" rows="3">{{ item.description or '' }}</textarea>
+                </div>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-sm-6">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select">
+                      {% for cat in categories %}
+                        <option value="{{ cat }}" {% if item.category == cat %}selected{% endif %}>{{ cat | replace('_',' ') | title }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label">Tags</label>
+                    <input type="text" name="tags" class="form-control" value="{{ item.tags or '' }}">
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input type="checkbox" name="is_free" id="editIsFreeShelfItem{{ item.id }}" class="form-check-input" {% if item.is_free %}checked{% endif %}>
+                    <label class="form-check-label" for="editIsFreeShelfItem{{ item.id }}">This is a free download</label>
+                  </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-sm-8">
+                    <label class="form-label">Price</label>
+                    <input type="number" name="price" class="form-control" step="0.01" min="0" value="{{ '%.2f' | format(item.price or 0) }}">
+                  </div>
+                  <div class="col-sm-4">
+                    <label class="form-label">Currency</label>
+                    <select name="currency" class="form-select">
+                      <option value="USD" {% if item.currency == 'USD' %}selected{% endif %}>USD</option>
+                      <option value="EUR" {% if item.currency == 'EUR' %}selected{% endif %}>EUR</option>
+                      <option value="GBP" {% if item.currency == 'GBP' %}selected{% endif %}>GBP</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="form-label">Replace cover image <span class="optional">(optional)</span></label>
+                  <input type="file" name="cover_image" class="form-control" accept=".png,.jpg,.jpeg,.webp">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Save changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="shelf-empty">
+      <span class="empty-icon"><i class="bi bi-bag-heart"></i></span>
+      <h5>Your shelf is empty</h5>
+      <p>Add presets, templates, guides, LUTs, or other digital downloads with the Add item button above.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<div class="modal fade" id="addShelfItemModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Shelf Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('dashboard.shelf_add') }}" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Title <span style="color:var(--color-berry-blush)">*</span></label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Golden Hour Lightroom Preset Pack" required maxlength="140">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="3" placeholder="What's included, how to use it..."></textarea>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-select">
+                {% for cat in categories %}
+                  <option value="{{ cat }}">{{ cat | replace('_',' ') | title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Tags</label>
+              <input type="text" name="tags" class="form-control" placeholder="lightroom, moody, portrait">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check">
+              <input type="checkbox" name="is_free" id="isFreeShelfItem" class="form-check-input" checked>
+              <label class="form-check-label" for="isFreeShelfItem">This is a free download</label>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3" id="shelfPriceGroup" style="display:none;">
+            <div class="col-sm-8">
+              <label class="form-label">Price</label>
+              <input type="number" name="price" class="form-control" step="0.01" min="0" placeholder="9.99">
+              <small class="form-hint">Payments are simulated; no real charge will occur.</small>
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label">Currency</label>
+              <select name="currency" class="form-select">
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Downloadable file <span style="color:var(--color-berry-blush)">*</span></label>
+            <input type="file" name="file" class="form-control" accept=".zip,.pdf,.xmp,.cube,.png,.jpg,.jpeg,.ttf,.otf,.abr" required>
+            <small class="form-hint">Accepted: zip, pdf, xmp, cube, png, jpg, ttf, otf, abr</small>
+          </div>
+
+          <div>
+            <label class="form-label">Cover image <span class="optional">(optional)</span></label>
+            <input type="file" name="cover_image" class="form-control" accept=".png,.jpg,.jpeg,.webp">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save to shelf</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const isFreeShelfItem = document.getElementById('isFreeShelfItem');
+const shelfPriceGroup = document.getElementById('shelfPriceGroup');
+
+if (isFreeShelfItem && shelfPriceGroup) {
+  isFreeShelfItem.addEventListener('change', () => {
+    shelfPriceGroup.style.display = isFreeShelfItem.checked ? 'none' : 'block';
+  });
+}
+</script>
+{% endblock %}

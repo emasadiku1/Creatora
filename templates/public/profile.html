@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% block title %}{{ creator.display_name or creator.username }} - Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background:#F2EDF7; }
+  footer.footer-creatora { margin-top:0 !important; }
+  .profile-page { min-height:100vh; padding:2rem 1rem 4rem; }
+
+  .profile-hero {
+    background:white;
+    border:1px solid var(--border-default);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm);
+    padding:1.75rem;
+    margin-bottom:2rem;
+  }
+  .profile-hero__inner { display:flex; align-items:center; justify-content:space-between; gap:1.5rem; flex-wrap:wrap; }
+  .profile-identity { display:flex; align-items:center; gap:1rem; min-width:0; }
+  .profile-avatar {
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    background:var(--color-berry-blush);
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--font-heading);
+    font-size:1.7rem;
+    font-weight:700;
+    box-shadow:var(--shadow-sm);
+    flex:0 0 auto;
+    overflow:hidden;
+  }
+  .profile-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+  .profile-kicker { color:var(--color-berry-blush); font-size:.74rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin:0 0 .35rem; }
+  .profile-hero h1 { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.8rem; margin:0; }
+  .profile-subtitle { color:var(--text-secondary); font-size:.95rem; max-width:720px; margin:.45rem 0 0; }
+  .profile-actions { display:flex; gap:.75rem; flex-wrap:wrap; }
+
+  .section-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin:0 0 1rem; }
+  .section-heading h2 { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.45rem; margin:0; }
+  .section-heading p { color:var(--text-secondary); font-size:.85rem; margin:0; }
+
+  .portfolio-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.25rem; margin-bottom:2rem; }
+  .portfolio-card { background:white; border:1px solid var(--border-default); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; transition:box-shadow var(--transition-normal), transform var(--transition-normal); }
+  .portfolio-card:hover { box-shadow:var(--shadow-md); transform:translateY(-3px); }
+  .portfolio-card__cover { aspect-ratio:4/3; background:var(--color-soft-blush); overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .portfolio-card__cover img { width:100%; height:100%; object-fit:cover; display:block; }
+  .portfolio-placeholder { color:var(--color-berry-blush); font-weight:700; letter-spacing:.08em; font-size:.85rem; }
+  .portfolio-card__body { padding:1rem 1.15rem 1.15rem; }
+  .portfolio-chip { display:inline-block; background:var(--color-soft-blush); color:var(--color-berry-blush); font-size:.7rem; font-weight:600; padding:2px 9px; border-radius:999px; margin-bottom:.55rem; text-transform:capitalize; }
+  .portfolio-card__title { font-family:var(--font-body); color:var(--color-dark-amethyst); font-size:.95rem; font-weight:700; margin:0 0 .35rem; }
+  .portfolio-card__desc { color:var(--text-secondary); font-size:.82rem; margin:0; }
+
+  .profile-empty { text-align:center; padding:3.5rem 1rem; background:white; border-radius:var(--radius-lg); border:1px solid var(--border-default); box-shadow:var(--shadow-sm); margin-bottom:2rem; }
+  .profile-empty .empty-icon { color:var(--color-dark-amethyst); font-size:2.6rem; display:block; margin-bottom:.75rem; }
+  .profile-empty h5 { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.2rem; margin-bottom:.4rem; }
+  .profile-empty p { color:var(--text-secondary); font-size:.875rem; margin:0; }
+
+  /* Testimonials */
+  /* Services */
+  .services-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem; margin-bottom:2rem; }
+  .svc-pub-card { background:white; border:1px solid var(--border-default); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); padding:1.25rem 1.4rem; display:flex; flex-direction:column; gap:.5rem; }
+  .svc-pub-card.featured { border-color:var(--color-berry-blush); border-width:2px; }
+  .svc-pub-title { font-size:.95rem; font-weight:700; color:var(--color-dark-amethyst); margin:0; }
+  .svc-pub-desc { font-size:.82rem; color:var(--text-secondary); margin:0; flex:1; }
+  .svc-pub-price { font-size:1rem; font-weight:700; color:var(--color-berry-blush); margin:0; }
+  .svc-pub-unit { font-size:.78rem; color:var(--text-secondary); font-weight:400; }
+  .svc-featured-badge { font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:999px; background:#FBEAF0; color:var(--color-berry-blush); text-transform:uppercase; letter-spacing:.4px; align-self:flex-start; }
+
+  .testimonials-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.25rem; margin-bottom:2rem; }
+  .t-card { background:white; border:1px solid var(--border-default); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); padding:1.25rem 1.4rem; display:flex; flex-direction:column; gap:.75rem; }
+  .t-card__stars { color:#f59e0b; font-size:.9rem; letter-spacing:1px; }
+  .t-card__quote { color:var(--text-primary); font-size:.9rem; line-height:1.65; font-style:italic; margin:0; flex:1; }
+  .t-card__author { display:flex; align-items:center; gap:.6rem; }
+  .t-card__avatar { width:34px; height:34px; border-radius:50%; background:var(--color-soft-blush); color:var(--color-berry-blush); font-family:var(--font-heading); font-weight:700; font-size:.9rem; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .t-card__name { font-weight:700; color:var(--color-dark-amethyst); font-size:.85rem; }
+  .t-card__role { color:var(--text-secondary); font-size:.75rem; }
+
+  /* Review form */
+  .review-card { background:white; border:1px solid var(--border-default); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); padding:1.5rem; margin-bottom:2rem; }
+  .review-card h3 { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.25rem; margin:0 0 .25rem; }
+  .review-card .intro { color:var(--text-secondary); font-size:.875rem; margin:0 0 1.25rem; }
+  .star-picker { display:flex; gap:.25rem; margin-bottom:.25rem; }
+  .star-picker input[type=radio] { display:none; }
+  .star-picker label { font-size:1.6rem; cursor:pointer; color:#d1d5db; transition:color .15s; }
+  .star-picker input[type=radio]:checked ~ label,
+  .star-picker label:hover,
+  .star-picker label:hover ~ label { color:#f59e0b; }
+  .star-picker { direction:rtl; }
+  .star-picker label { direction:ltr; }
+
+  .inquiry-card { background:white; border:1px solid var(--border-default); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); padding:1.5rem; }
+  .inquiry-card h3 { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.25rem; margin:0 0 .25rem; }
+  .inquiry-card .intro { color:var(--text-secondary); font-size:.875rem; margin:0 0 1.25rem; }
+  .form-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+  .form-group { margin-bottom:1rem; }
+  .form-group label { display:block; font-size:.85rem; font-weight:500; color:var(--text-primary); margin-bottom:.3rem; }
+  .form-control { border-radius:var(--radius-sm); border:1px solid var(--border-default); font-size:.875rem; color:var(--text-primary); padding:.62rem .85rem; width:100%; background:white; }
+  .form-control:focus { border-color:var(--color-berry-blush); box-shadow:0 0 0 3px rgba(163,62,126,.1); outline:none; }
+  textarea.form-control { min-height:150px; resize:vertical; }
+
+  @media(max-width:768px) {
+    .profile-hero { padding:1.25rem; }
+    .profile-identity { align-items:flex-start; }
+    .profile-actions { width:100%; }
+    .profile-actions .btn { flex:1 1 auto; }
+    .form-row { grid-template-columns:1fr; gap:0; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+  <div class="container">
+    <section class="profile-hero">
+      <div class="profile-hero__inner">
+        <div class="profile-identity">
+          <div class="profile-avatar">
+            {% if creator.avatar %}
+              <img src="{{ url_for('static', filename='images/uploads/' ~ creator.avatar) }}" alt="{{ creator.display_name or creator.username }}">
+            {% else %}
+              {{ (creator.display_name or creator.username)[0] | upper }}
+            {% endif %}
+          </div>
+          <div>
+            <p class="profile-kicker">{{ creator.role | replace('_',' ') | title }}</p>
+            <h1>{{ creator.display_name or creator.username }}</h1>
+            {% if creator.bio %}
+              <p class="profile-subtitle">{{ creator.bio }}</p>
+            {% endif %}
+          </div>
+        </div>
+        <div class="profile-actions">
+          <a href="{{ url_for('public.creator_shelf', username=creator.username) }}" class="btn btn-primary">Shop shelf</a>
+          {% if not (current_user.is_authenticated and current_user.id == creator.id) %}
+          <a href="#inquire" class="btn btn-secondary">Send inquiry</a>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <div class="section-heading">
+      <div>
+        <h2>Portfolio</h2>
+        <p>Selected public work from {{ creator.display_name or creator.username }}.</p>
+      </div>
+    </div>
+
+    {% if portfolio %}
+      <div class="portfolio-grid">
+        {% for item in portfolio %}
+        <article class="portfolio-card">
+          <div class="portfolio-card__cover">
+            {% if item.image %}
+              <img src="{{ url_for('static', filename='images/uploads/' ~ item.image) }}" alt="{{ item.title }}" loading="lazy">
+            {% else %}
+              <span class="portfolio-placeholder">Work</span>
+            {% endif %}
+          </div>
+          <div class="portfolio-card__body">
+            <span class="portfolio-chip">{{ item.category or 'Portfolio' }}</span>
+            <h3 class="portfolio-card__title">{{ item.title }}</h3>
+            {% if item.description %}<p class="portfolio-card__desc">{{ item.description }}</p>{% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="profile-empty">
+        <span class="empty-icon"><i class="bi bi-images"></i></span>
+        <h5>No portfolio items yet</h5>
+        <p>This creator has not published portfolio work yet.</p>
+      </div>
+    {% endif %}
+
+    {% if services %}
+    <div class="section-heading">
+      <div>
+        <h2>Services & Pricing</h2>
+        <p>What {{ creator.display_name or creator.username }} offers and how to get started.</p>
+      </div>
+    </div>
+    <div class="services-grid">
+      {% for svc in services %}
+      <div class="svc-pub-card {{ 'featured' if svc.is_featured else '' }}">
+        {% if svc.is_featured %}<span class="svc-featured-badge">Featured</span>{% endif %}
+        <p class="svc-pub-title">{{ svc.title }}</p>
+        {% if svc.description %}<p class="svc-pub-desc">{{ svc.description }}</p>{% endif %}
+        <p class="svc-pub-price">
+          {% if svc.price_from is not none %}
+            {{ svc.currency }} {{ '%.0f'|format(svc.price_from) }}{% if svc.price_to %} – {{ '%.0f'|format(svc.price_to) }}{% endif %}
+            {% if svc.unit %}<span class="svc-pub-unit"> {{ svc.unit }}</span>{% endif %}
+          {% else %}
+            <span class="svc-pub-unit" style="font-size:.85rem;">Contact for pricing</span>
+          {% endif %}
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if testimonials %}
+    <div class="section-heading">
+      <div>
+        <h2>What clients say</h2>
+        <p>Reviews from people who have worked with {{ creator.display_name or creator.username }}.</p>
+      </div>
+    </div>
+    <div class="testimonials-grid">
+      {% for t in testimonials %}
+      <div class="t-card">
+        <div class="t-card__stars">{{ '★' * t.rating }}{{ '☆' * (5 - t.rating) }}</div>
+        <p class="t-card__quote">"{{ t.body }}"</p>
+        <div class="t-card__author">
+          <div class="t-card__avatar">{{ t.author_name[0] | upper }}</div>
+          <div>
+            <div class="t-card__name">{{ t.author_name }}</div>
+            {% if t.author_title %}<div class="t-card__role">{{ t.author_title }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not (current_user.is_authenticated and current_user.id == creator.id) %}
+    <div id="leave-review" class="review-card">
+      <h3>Leave a review</h3>
+      <p class="intro">Worked with {{ creator.display_name or creator.username }}? Share your experience — it helps others and means a lot to the creator.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} mb-3">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+      <form method="POST" action="{{ url_for('public.submit_testimonial', username=creator.username) }}">
+        <div class="form-group">
+          <label>Your rating</label>
+          <div class="star-picker">
+            <input type="radio" name="rating" id="s5" value="5" checked><label for="s5">★</label>
+            <input type="radio" name="rating" id="s4" value="4"><label for="s4">★</label>
+            <input type="radio" name="rating" id="s3" value="3"><label for="s3">★</label>
+            <input type="radio" name="rating" id="s2" value="2"><label for="s2">★</label>
+            <input type="radio" name="rating" id="s1" value="1"><label for="s1">★</label>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="r-name">Your name <span style="color:var(--color-berry-blush)">*</span></label>
+            <input id="r-name" class="form-control" name="author_name" placeholder="Jane Smith" required>
+          </div>
+          <div class="form-group">
+            <label for="r-title">Your role / company</label>
+            <input id="r-title" class="form-control" name="author_title" placeholder="CEO at Bloom Studio">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="r-email">Email address <span style="color:var(--text-secondary);font-size:.8rem">(private, not shown publicly)</span></label>
+          <input id="r-email" class="form-control" type="email" name="author_email" placeholder="jane@example.com">
+        </div>
+        <div class="form-group">
+          <label for="r-body">Your review <span style="color:var(--color-berry-blush)">*</span></label>
+          <textarea id="r-body" class="form-control" name="body" rows="4" placeholder="Tell others about your experience working with this creator…" required></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit">Submit review</button>
+        <p style="color:var(--text-secondary);font-size:.78rem;margin:.75rem 0 0">Reviews appear after the creator approves them.</p>
+      </form>
+    </div>
+
+    <div id="inquire" class="inquiry-card">
+      <h3>Send an inquiry</h3>
+      <p class="intro">Share a few details and your message will go straight to this creator.</p>
+      <form method="POST" action="{{ url_for('public.send_inquiry', username=creator.username) }}">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="inquiry-name">Name</label>
+            <input id="inquiry-name" class="form-control" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="inquiry-email">Email</label>
+            <input id="inquiry-email" class="form-control" type="email" name="email" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inquiry-message">Message</label>
+          <textarea id="inquiry-message" class="form-control" name="message" rows="4" required></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit">Send inquiry</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

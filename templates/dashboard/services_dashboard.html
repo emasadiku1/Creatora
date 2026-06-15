@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% block title %}Services & Pricing — Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #F2EDF7; }
+  footer.footer-creatora { margin-top: 0 !important; }
+  .dash-page { min-height: 100vh; padding: 2rem 1rem 4rem; }
+
+  .page-header { margin-bottom: 2rem; }
+  .back-link { font-size: .82rem; color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: .35rem; margin-bottom: .5rem; transition: color var(--transition-fast); }
+  .back-link:hover { color: var(--color-berry-blush); }
+  .page-header h1 { font-size: 1.5rem; color: var(--color-dark-amethyst); font-family: var(--font-heading); margin: 0 0 .2rem; }
+  .page-header p { font-size: .85rem; color: var(--text-secondary); margin: 0; }
+
+  .page-layout { display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; align-items: start; }
+
+  /* service cards */
+  .svc-card { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-default); box-shadow: var(--shadow-sm); padding: 1.25rem 1.4rem; margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 1rem; }
+  .svc-card:last-child { margin-bottom: 0; }
+  .svc-featured-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-berry-blush); flex-shrink: 0; margin-top: .4rem; }
+  .svc-featured-dot.inactive { background: var(--border-default); }
+  .svc-body { flex: 1; min-width: 0; }
+  .svc-title { font-size: .95rem; font-weight: 700; color: var(--color-dark-amethyst); margin: 0 0 .3rem; }
+  .svc-desc { font-size: .82rem; color: var(--text-secondary); margin: 0 0 .6rem; }
+  .svc-price { font-size: .85rem; font-weight: 600; color: var(--color-dark-amethyst); margin: 0; }
+  .svc-unit { font-size: .78rem; color: var(--text-secondary); font-weight: 400; }
+  .svc-actions { display: flex; gap: .5rem; flex-shrink: 0; }
+  .svc-btn { font-size: .75rem; padding: .3rem .8rem; border-radius: var(--radius-sm); border: 1px solid var(--border-default); background: white; color: var(--text-secondary); cursor: pointer; text-decoration: none; transition: all var(--transition-fast); }
+  .svc-btn:hover { border-color: var(--color-berry-blush); color: var(--color-berry-blush); }
+  .svc-btn.danger:hover { border-color: #dc3545; color: #dc3545; }
+  .featured-chip { font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #FBEAF0; color: var(--color-berry-blush); text-transform: uppercase; letter-spacing: .4px; display: inline-block; margin-left: .5rem; }
+
+  /* add form card */
+  .form-card { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-default); box-shadow: var(--shadow-sm); overflow: hidden; position: sticky; top: 1.5rem; }
+  .form-card-header { padding: 1rem 1.4rem; border-bottom: 1px solid var(--border-default); }
+  .form-card-header h3 { font-size: .9rem; font-weight: 600; color: var(--color-dark-amethyst); margin: 0; }
+  .form-card-body { padding: 1.25rem 1.4rem; }
+  .field-group { margin-bottom: 1rem; }
+  .field-group:last-child { margin-bottom: 0; }
+  .form-label { font-size: .8rem; font-weight: 600; color: var(--text-primary); margin-bottom: .3rem; display: block; }
+  .form-hint { font-size: .72rem; color: var(--text-secondary); margin-top: .2rem; }
+  .form-control, .form-select { border-radius: var(--radius-sm); border: 1px solid var(--border-default); font-size: .875rem; color: var(--text-primary); padding: .5rem .8rem; width: 100%; transition: border-color var(--transition-fast); background: white; }
+  .form-control:focus, .form-select:focus { border-color: var(--color-berry-blush); box-shadow: 0 0 0 3px rgba(163,62,126,.1); outline: none; }
+  textarea.form-control { resize: vertical; min-height: 70px; }
+  .price-row { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+  .btn-primary-creatora { background: var(--color-berry-blush); color: white; border: none; border-radius: var(--radius-sm); padding: .6rem 1.2rem; font-size: .875rem; font-weight: 600; cursor: pointer; width: 100%; transition: opacity var(--transition-fast); }
+  .btn-primary-creatora:hover { opacity: .88; }
+
+  .empty-state { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-default); box-shadow: var(--shadow-sm); text-align: center; padding: 3rem 1.5rem; }
+  .empty-state .ei { font-size: 2.2rem; display: block; margin-bottom: .75rem; }
+  .empty-state h4 { color: var(--color-dark-amethyst); font-family: var(--font-heading); margin-bottom: .3rem; }
+  .empty-state p { color: var(--text-secondary); font-size: .85rem; margin: 0; }
+
+  /* edit modal */
+  .modal-backdrop-custom { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1040; align-items:center; justify-content:center; }
+  .modal-backdrop-custom.show { display:flex; }
+  .modal-box { background:white; border-radius:var(--radius-lg); box-shadow:0 20px 60px rgba(0,0,0,.2); padding:1.5rem; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; }
+  .modal-box h4 { color:var(--color-dark-amethyst); font-family:var(--font-heading); margin:0 0 1.25rem; font-size:1.1rem; }
+
+  @media(max-width:860px){ .page-layout { grid-template-columns:1fr; } .form-card { position:static; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+  <div class="container">
+
+    <div class="page-header">
+      <a href="{{ url_for('dashboard.home') }}" class="back-link"><i class="bi bi-arrow-left"></i> Dashboard</a>
+      <h1>Services & Pricing</h1>
+      <p>Define what you offer and how much you charge — shown publicly on your profile.</p>
+    </div>
+
+    <div class="page-layout">
+
+      <!-- LEFT: service list -->
+      <div>
+        {% if services %}
+          {% for svc in services %}
+          <div class="svc-card">
+            <div class="svc-featured-dot {{ '' if svc.is_featured else 'inactive' }}"
+                 title="{{ 'Featured' if svc.is_featured else 'Not featured' }}"></div>
+            <div class="svc-body">
+              <p class="svc-title">
+                {{ svc.title }}
+                {% if svc.is_featured %}<span class="featured-chip">Featured</span>{% endif %}
+              </p>
+              {% if svc.description %}<p class="svc-desc">{{ svc.description }}</p>{% endif %}
+              <p class="svc-price">
+                {% if svc.price_from is not none %}
+                  {{ svc.currency }} {{ '%.0f'|format(svc.price_from) }}{% if svc.price_to %} – {{ '%.0f'|format(svc.price_to) }}{% endif %}
+                  {% if svc.unit %}<span class="svc-unit"> {{ svc.unit }}</span>{% endif %}
+                {% else %}
+                  <span class="svc-unit">Contact for pricing</span>
+                {% endif %}
+              </p>
+            </div>
+            <div class="svc-actions">
+              <button class="svc-btn" onclick="openEdit({{ svc.id }},
+                '{{ svc.title|replace("'", "\\'") }}',
+                '{{ (svc.description or '')|replace("'", "\\'") }}',
+                '{{ svc.price_from if svc.price_from is not none else '' }}',
+                '{{ svc.price_to if svc.price_to is not none else '' }}',
+                '{{ svc.currency }}',
+                '{{ svc.unit or '' }}',
+                {{ 'true' if svc.is_featured else 'false' }})">Edit</button>
+              <form method="POST" action="{{ url_for('dashboard.delete_service', svc_id=svc.id) }}"
+                    onsubmit="return confirm('Remove this service?');" style="margin:0;">
+                <button type="submit" class="svc-btn danger">Delete</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state">
+            <span class="ei">💼</span>
+            <h4>No services yet</h4>
+            <p>Add your first service using the form on the right.<br>It'll appear on your public profile immediately.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- RIGHT: add form -->
+      <div class="form-card">
+        <div class="form-card-header"><h3>➕ Add a service</h3></div>
+        <div class="form-card-body">
+          <form method="POST" action="{{ url_for('dashboard.add_service') }}">
+            <div class="field-group">
+              <label class="form-label">Service title *</label>
+              <input type="text" name="title" class="form-control" placeholder="e.g. Brand Photography" required>
+            </div>
+            <div class="field-group">
+              <label class="form-label">Description</label>
+              <textarea name="description" class="form-control" placeholder="What's included, turnaround time, deliverables…"></textarea>
+            </div>
+            <div class="field-group">
+              <label class="form-label">Pricing</label>
+              <div class="price-row">
+                <input type="number" name="price_from" class="form-control" placeholder="From (e.g. 500)" min="0" step="any">
+                <input type="number" name="price_to" class="form-control" placeholder="To (optional)" min="0" step="any">
+              </div>
+              <p class="form-hint">Leave both blank to show "Contact for pricing".</p>
+            </div>
+            <div class="field-group">
+              <div class="price-row">
+                <div>
+                  <label class="form-label">Currency</label>
+                  <select name="currency" class="form-select">
+                    <option value="USD">USD $</option>
+                    <option value="EUR">EUR €</option>
+                    <option value="GBP">GBP £</option>
+                    <option value="ALL">ALL L</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Unit</label>
+                  <input type="text" name="unit" class="form-control" placeholder="per session">
+                </div>
+              </div>
+            </div>
+            <div class="field-group">
+              <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;cursor:pointer;">
+                <input type="checkbox" name="is_featured"> Feature this service
+              </label>
+              <p class="form-hint">Featured services appear at the top of your profile.</p>
+            </div>
+            <button type="submit" class="btn-primary-creatora">Add service</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-backdrop-custom" id="editModal" onclick="closeEdit(event)">
+  <div class="modal-box">
+    <h4>Edit service</h4>
+    <form method="POST" id="editForm">
+      <div class="field-group">
+        <label class="form-label">Service title *</label>
+        <input type="text" name="title" id="edit-title" class="form-control" required>
+      </div>
+      <div class="field-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" id="edit-desc" class="form-control"></textarea>
+      </div>
+      <div class="field-group">
+        <label class="form-label">Pricing</label>
+        <div class="price-row">
+          <input type="number" name="price_from" id="edit-from" class="form-control" placeholder="From" min="0" step="any">
+          <input type="number" name="price_to" id="edit-to" class="form-control" placeholder="To (optional)" min="0" step="any">
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="price-row">
+          <div>
+            <label class="form-label">Currency</label>
+            <select name="currency" id="edit-currency" class="form-select">
+              <option value="USD">USD $</option>
+              <option value="EUR">EUR €</option>
+              <option value="GBP">GBP £</option>
+              <option value="ALL">ALL L</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Unit</label>
+            <input type="text" name="unit" id="edit-unit" class="form-control" placeholder="per session">
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;cursor:pointer;">
+          <input type="checkbox" name="is_featured" id="edit-featured"> Feature this service
+        </label>
+      </div>
+      <div style="display:flex;gap:.75rem;margin-top:1.25rem;">
+        <button type="submit" class="btn-primary-creatora" style="flex:1;">Save changes</button>
+        <button type="button" onclick="document.getElementById('editModal').classList.remove('show')"
+          style="flex:1;border:1px solid var(--border-default);background:white;border-radius:var(--radius-sm);font-size:.875rem;cursor:pointer;padding:.6rem;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openEdit(id, title, desc, priceFrom, priceTo, currency, unit, featured) {
+  document.getElementById('editForm').action = `/dashboard/services/${id}/edit`;
+  document.getElementById('edit-title').value = title;
+  document.getElementById('edit-desc').value = desc;
+  document.getElementById('edit-from').value = priceFrom;
+  document.getElementById('edit-to').value = priceTo;
+  document.getElementById('edit-currency').value = currency;
+  document.getElementById('edit-unit').value = unit;
+  document.getElementById('edit-featured').checked = featured;
+  document.getElementById('editModal').classList.add('show');
+}
+function closeEdit(e) {
+  if (e.target === document.getElementById('editModal'))
+    document.getElementById('editModal').classList.remove('show');
+}
+</script>
+{% endblock %}

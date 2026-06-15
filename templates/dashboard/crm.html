@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% block title %}Client CRM — Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #F2EDF7; }
+  footer.footer-creatora { margin-top: 0 !important; }
+  .dash-page { min-height: 100vh; padding: 2rem 1rem 4rem; }
+
+  .back-link { font-size:.82rem; color:var(--text-secondary); text-decoration:none; display:inline-flex; align-items:center; gap:.35rem; margin-bottom:.35rem; }
+  .back-link:hover { color:var(--color-berry-blush); }
+  .page-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+  .page-header h1 { font-size:1.5rem; color:var(--color-dark-amethyst); font-family:var(--font-heading); margin:0; }
+
+  /* pipeline tabs */
+  .pipeline-tabs { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.75rem; }
+  .pipe-tab { display:flex; align-items:center; gap:.5rem; padding:.55rem 1.1rem; border-radius:999px; border:1.5px solid var(--border-default); background:white; color:var(--text-secondary); font-size:.82rem; font-weight:500; cursor:pointer; text-decoration:none; transition:all var(--transition-fast); }
+  .pipe-tab:hover { border-color:var(--color-berry-blush); color:var(--color-berry-blush); }
+  .pipe-tab.active { border-color:var(--color-dark-amethyst); background:var(--color-dark-amethyst); color:white; }
+  .pipe-count { font-size:.7rem; font-weight:700; padding:1px 7px; border-radius:999px; background:rgba(255,255,255,.2); }
+  .pipe-tab:not(.active) .pipe-count { background:var(--color-soft-blush); color:var(--color-berry-blush); }
+
+  /* table card */
+  .crm-card { background:white; border-radius:var(--radius-lg); border:1px solid var(--border-default); box-shadow:var(--shadow-sm); overflow:hidden; }
+  .crm-table { width:100%; border-collapse:collapse; }
+  .crm-table thead th { padding:.75rem 1.25rem; font-size:.75rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.6px; border-bottom:1px solid var(--border-default); background:#fafafa; white-space:nowrap; }
+  .crm-table tbody tr { border-bottom:1px solid var(--border-default); transition:background var(--transition-fast); }
+  .crm-table tbody tr:last-child { border-bottom:none; }
+  .crm-table tbody tr:hover { background:var(--color-lavender-blush); }
+  .crm-table td { padding:.9rem 1.25rem; vertical-align:middle; font-size:.875rem; color:var(--text-primary); }
+
+  /* avatar */
+  .inq-avatar { width:36px; height:36px; border-radius:50%; background:var(--color-berry-blush); display:flex; align-items:center; justify-content:center; color:white; font-size:.8rem; font-weight:700; flex-shrink:0; }
+
+  /* status badges */
+  .status-badge { font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap; }
+  .badge-new        { background:#FBEAF0; color:#A33E7E; }
+  .badge-discussion { background:#E6F1FB; color:#3078A4; }
+  .badge-booked     { background:#E1F5EE; color:#2a6b3c; }
+  .badge-completed  { background:var(--border-default); color:var(--text-secondary); }
+
+  /* message preview */
+  .msg-preview { color:var(--text-secondary); font-size:.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px; }
+
+  /* action buttons */
+  .row-actions { display:flex; gap:.4rem; }
+  .row-btn { background:transparent; border:1px solid var(--border-default); border-radius:var(--radius-sm); width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-size:.8rem; cursor:pointer; transition:all var(--transition-fast); color:var(--text-secondary); text-decoration:none; }
+  .row-btn:hover { border-color:var(--color-berry-blush); color:var(--color-berry-blush); background:var(--color-lavender-blush); }
+  .row-btn.delete:hover { border-color:#c0392b; color:#c0392b; background:#fde8e8; }
+
+  /* status dropdown inline */
+  .status-form select { border:1px solid var(--border-default); border-radius:999px; font-size:.72rem; font-weight:600; padding:3px 8px; color:var(--text-primary); background:white; cursor:pointer; outline:none; }
+  .status-form select:focus { border-color:var(--color-berry-blush); }
+
+  /* empty */
+  .crm-empty { text-align:center; padding:4rem 1rem; }
+  .crm-empty .empty-icon { font-size:2.5rem; display:block; margin-bottom:.75rem; }
+  .crm-empty h5 { font-family:var(--font-heading); color:var(--color-dark-amethyst); margin-bottom:.4rem; }
+  .crm-empty p { font-size:.875rem; color:var(--text-secondary); }
+
+  /* detail modal */
+  .modal-content { border-radius:var(--radius-lg); border:none; box-shadow:var(--shadow-lg); }
+  .modal-header { border-bottom:1px solid var(--border-default); padding:1.25rem 1.5rem; }
+  .modal-header .modal-title { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.15rem; }
+  .modal-body { padding:1.5rem; }
+  .modal-footer { border-top:1px solid var(--border-default); padding:1rem 1.5rem; }
+
+  .detail-label { font-size:.75rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.6px; margin-bottom:.25rem; }
+  .detail-value { font-size:.9rem; color:var(--text-primary); margin-bottom:1.25rem; }
+  .detail-message { background:var(--color-lavender-blush); border-left:3px solid var(--color-berry-blush); padding:1rem 1.1rem; border-radius:0 var(--radius-sm) var(--radius-sm) 0; font-size:.875rem; color:var(--text-primary); line-height:1.6; }
+
+  .status-select-full { border:1.5px solid var(--border-default); border-radius:var(--radius-sm); font-size:.875rem; padding:.5rem .85rem; width:100%; color:var(--text-primary); }
+  .status-select-full:focus { border-color:var(--color-berry-blush); box-shadow:0 0 0 3px rgba(163,62,126,.1); outline:none; }
+
+  @media(max-width:768px){
+    .crm-table thead th:nth-child(3),
+    .crm-table td:nth-child(3) { display:none; }
+    .msg-preview { max-width:160px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <a href="{{ url_for('dashboard.home') }}" class="back-link"><i class="bi bi-arrow-left"></i> Dashboard</a>
+        <h1>👥 Client CRM</h1>
+      </div>
+      <a href="{{ url_for('public.profile', username=current_user.username) }}"
+         target="_blank"
+         style="font-size:.82rem;color:var(--color-pacific-cyan);text-decoration:none;display:flex;align-items:center;gap:.35rem;">
+        <i class="bi bi-box-arrow-up-right"></i> View public profile
+      </a>
+    </div>
+
+    <!-- Pipeline tabs -->
+    <div class="pipeline-tabs">
+      <a href="{{ url_for('dashboard.crm') }}"
+         class="pipe-tab {{ 'active' if not active_status else '' }}">
+        All
+        <span class="pipe-count">{{ counts.new + counts.discussion + counts.booked + counts.completed }}</span>
+      </a>
+      <a href="{{ url_for('dashboard.crm', status='new') }}"
+         class="pipe-tab {{ 'active' if active_status == 'new' else '' }}">
+        🔔 New
+        <span class="pipe-count">{{ counts.new }}</span>
+      </a>
+      <a href="{{ url_for('dashboard.crm', status='discussion') }}"
+         class="pipe-tab {{ 'active' if active_status == 'discussion' else '' }}">
+        💬 In discussion
+        <span class="pipe-count">{{ counts.discussion }}</span>
+      </a>
+      <a href="{{ url_for('dashboard.crm', status='booked') }}"
+         class="pipe-tab {{ 'active' if active_status == 'booked' else '' }}">
+        ✅ Booked
+        <span class="pipe-count">{{ counts.booked }}</span>
+      </a>
+      <a href="{{ url_for('dashboard.crm', status='completed') }}"
+         class="pipe-tab {{ 'active' if active_status == 'completed' else '' }}">
+        🏁 Completed
+        <span class="pipe-count">{{ counts.completed }}</span>
+      </a>
+    </div>
+
+    <!-- Table -->
+    <div class="crm-card">
+      {% if inquiries %}
+      <div style="overflow-x:auto;">
+        <table class="crm-table">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Message</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inq in inquiries %}
+            <tr>
+
+              <!-- Client -->
+              <td>
+                <div style="display:flex;align-items:center;gap:.75rem;">
+                  <div class="inq-avatar">{{ inq.name[0]|upper }}</div>
+                  <div>
+                    <p style="margin:0;font-weight:600;font-size:.875rem;color:var(--color-dark-amethyst);">{{ inq.name }}</p>
+                    <p style="margin:0;font-size:.75rem;color:var(--text-secondary);">{{ inq.email }}</p>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Message preview -->
+              <td><p class="msg-preview">{{ inq.message }}</p></td>
+
+              <!-- Date -->
+              <td style="color:var(--text-secondary);font-size:.82rem;white-space:nowrap;">
+                {{ inq.created_at.strftime('%b %d, %Y') }}
+              </td>
+
+              <!-- Status (inline dropdown) -->
+              <td>
+                <form method="POST" action="{{ url_for('dashboard.update_inquiry_status', inquiry_id=inq.id) }}" class="status-form">
+                  <select name="status" onchange="this.form.submit()" title="Change status">
+                    <option value="new"        {{ 'selected' if inq.status == 'new' }}>🔔 New</option>
+                    <option value="discussion" {{ 'selected' if inq.status == 'discussion' }}>💬 Discussion</option>
+                    <option value="booked"     {{ 'selected' if inq.status == 'booked' }}>✅ Booked</option>
+                    <option value="completed"  {{ 'selected' if inq.status == 'completed' }}>🏁 Completed</option>
+                  </select>
+                </form>
+              </td>
+
+              <!-- Actions -->
+              <td>
+                <div class="row-actions">
+                  <button class="row-btn" title="View full message"
+                          data-bs-toggle="modal" data-bs-target="#detailModal"
+                          data-name="{{ inq.name }}"
+                          data-email="{{ inq.email }}"
+                          data-message="{{ inq.message }}"
+                          data-status="{{ inq.status }}"
+                          data-date="{{ inq.created_at.strftime('%B %d, %Y') }}"
+                          data-id="{{ inq.id }}">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <a href="mailto:{{ inq.email }}" class="row-btn" title="Reply by email">
+                    <i class="bi bi-envelope"></i>
+                  </a>
+                </div>
+              </td>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% else %}
+      <div class="crm-empty">
+        <span class="empty-icon">📭</span>
+        <h5>
+          {% if active_status %}No {{ active_status }} inquiries{% else %}No inquiries yet{% endif %}
+        </h5>
+        <p>
+          {% if active_status %}
+            Try a different filter above.
+          {% else %}
+            Share your public profile and clients will start reaching out.
+          {% endif %}
+        </p>
+        {% if not active_status %}
+        <a href="{{ url_for('public.profile', username=current_user.username) }}"
+           target="_blank"
+           class="btn btn-primary mt-3" style="border-radius:999px;">
+          <i class="bi bi-box-arrow-up-right me-1"></i>View my public profile
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+
+<!-- DETAIL MODAL -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Inquiry from <span id="dName"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <p class="detail-label">Email</p>
+            <p class="detail-value"><a id="dEmail" href="#" style="color:var(--color-pacific-cyan);"></a></p>
+          </div>
+          <div class="col-sm-6">
+            <p class="detail-label">Received</p>
+            <p class="detail-value" id="dDate"></p>
+          </div>
+        </div>
+
+        <p class="detail-label">Message</p>
+        <div class="detail-message" id="dMessage"></div>
+
+        <div class="mt-3">
+          <p class="detail-label mb-2">Update status</p>
+          <form method="POST" id="dStatusForm">
+            <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
+              <select name="status" id="dStatus" class="status-select-full" style="max-width:200px;">
+                <option value="new">🔔 New</option>
+                <option value="discussion">💬 In discussion</option>
+                <option value="booked">✅ Booked</option>
+                <option value="completed">🏁 Completed</option>
+              </select>
+              <button type="submit" class="btn btn-primary btn-sm" style="border-radius:999px;">Save</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <a id="dReply" href="#" class="btn btn-secondary btn-sm" style="border-radius:999px;">
+          <i class="bi bi-envelope me-1"></i>Reply by email
+        </a>
+        <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal" style="border-radius:999px;">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Populate detail modal
+document.querySelectorAll('[data-bs-target="#detailModal"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('dName').textContent    = btn.dataset.name;
+    document.getElementById('dEmail').textContent   = btn.dataset.email;
+    document.getElementById('dEmail').href          = 'mailto:' + btn.dataset.email;
+    document.getElementById('dDate').textContent    = btn.dataset.date;
+    document.getElementById('dMessage').textContent = btn.dataset.message;
+    document.getElementById('dReply').href          = 'mailto:' + btn.dataset.email;
+    document.getElementById('dStatus').value        = btn.dataset.status;
+    document.getElementById('dStatusForm').action   =
+      '/dashboard/crm/' + btn.dataset.id + '/status';
+  });
+});
+</script>
+{% endblock %}

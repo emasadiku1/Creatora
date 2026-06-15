@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Get {{ item.title }} — Creatora{% endblock %}
+
+{% block content %}
+<div class="checkout-wrapper">
+
+  <div class="checkout-card">
+    <div class="checkout-card__cover">
+      {% if item.cover_image %}
+        <img src="{{ url_for('static', filename='images/uploads/' ~ item.cover_image) }}" alt="{{ item.title }}">
+      {% else %}
+        <div class="checkout-placeholder">{{ item.file_type | upper }}</div>
+      {% endif %}
+    </div>
+
+    <div class="checkout-card__info">
+      <span class="shelf-card__category">{{ item.category }}</span>
+      <h2>{{ item.title }}</h2>
+      {% if item.description %}
+        <p class="checkout-desc">{{ item.description }}</p>
+      {% endif %}
+      <div class="checkout-price">{{ item.currency }} {{ '%.2f' | format(item.price) }}</div>
+      <p class="checkout-sim-notice">⚡ Payments are simulated — no real charge will occur.</p>
+    </div>
+  </div>
+
+  <div class="checkout-form-card">
+    <h3>Complete your download</h3>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" name="email" class="form-control"
+               placeholder="you@example.com"
+               value="{{ current_user.email if current_user.is_authenticated else '' }}"
+               required>
+      </div>
+      <div class="form-group">
+        <label>Card number</label>
+        <input type="text" class="form-control" placeholder="4242 4242 4242 4242" disabled>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Expiry</label>
+          <input type="text" class="form-control" placeholder="MM / YY" disabled>
+        </div>
+        <div class="form-group">
+          <label>CVC</label>
+          <input type="text" class="form-control" placeholder="123" disabled>
+        </div>
+      </div>
+      <p class="form-hint">Card fields are disabled — this is a simulated checkout.</p>
+
+      <button type="submit" class="btn btn-primary btn-full">
+        Pay {{ item.currency }} {{ '%.2f' | format(item.price) }} & Download
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,382 @@
+{% extends 'base.html' %}
+{% block title %}Analytics — Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #F2EDF7; }
+  footer.footer-creatora { margin-top: 0 !important; }
+  .dash-page { min-height: 100vh; padding: 2rem 1rem 4rem; }
+
+  /* header */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+  .back-link { font-size: .82rem; color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: .35rem; margin-bottom: .4rem; transition: color var(--transition-fast); }
+  .back-link:hover { color: var(--color-berry-blush); }
+  .page-header h1 { font-size: 1.5rem; color: var(--color-dark-amethyst); font-family: var(--font-heading); margin: 0 0 .2rem; }
+  .page-header p { font-size: .85rem; color: var(--text-secondary); margin: 0; }
+
+  /* section label */
+  .section-label { font-size: .7rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-secondary); margin: 0 0 .85rem; }
+
+  /* stat cards row */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.75rem; }
+  .stat-card { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-default); padding: 1.2rem 1.35rem; box-shadow: var(--shadow-sm); transition: box-shadow var(--transition-normal), transform var(--transition-normal); }
+  .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .stat-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+  .stat-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .stat-value { font-size: 1.9rem; font-weight: 700; color: var(--color-dark-amethyst); font-family: var(--font-heading); line-height: 1; margin-bottom: .2rem; }
+  .stat-label { font-size: .75rem; color: var(--text-secondary); margin: 0; }
+  .stat-sub { font-size: .72rem; color: var(--text-secondary); margin: .3rem 0 0; }
+
+  /* conversion highlight */
+  .conversion-card { background: linear-gradient(135deg, var(--color-berry-blush), #8a3468); border-radius: var(--radius-lg); padding: 1.4rem 1.5rem; color: white; box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+  .conversion-card .conv-val { font-size: 3rem; font-weight: 700; font-family: var(--font-heading); line-height: 1; }
+  .conversion-card .conv-label { font-size: .82rem; opacity: .8; margin: .25rem 0 0; }
+  .conversion-card .conv-desc { font-size: .82rem; opacity: .75; max-width: 280px; }
+  .conv-bar-wrap { flex: 1; min-width: 160px; }
+  .conv-bar-track { height: 8px; background: rgba(255,255,255,.2); border-radius: 999px; overflow: hidden; margin-top: .5rem; }
+  .conv-bar-fill { height: 100%; background: white; border-radius: 999px; transition: width .8s ease; }
+
+  /* two col layout */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.75rem; }
+
+  /* section card */
+  .s-card { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-default); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .s-card-header { display: flex; align-items: center; gap: .65rem; padding: 1rem 1.4rem; border-bottom: 1px solid var(--border-default); }
+  .s-card-header h3 { font-size: .9rem; font-weight: 600; color: var(--color-dark-amethyst); margin: 0; font-family: var(--font-body); }
+  .s-card-header a { margin-left: auto; font-size: .78rem; color: var(--color-berry-blush); font-weight: 500; text-decoration: none; }
+  .s-card-header a:hover { text-decoration: underline; }
+  .s-card-body { padding: 1.25rem 1.4rem; }
+  .s-card-icon { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0; }
+
+  /* breakdown bars */
+  .breakdown-item { margin-bottom: .9rem; }
+  .breakdown-item:last-child { margin-bottom: 0; }
+  .breakdown-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: .3rem; }
+  .breakdown-label { font-size: .8rem; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: .4rem; }
+  .breakdown-count { font-size: .8rem; font-weight: 600; color: var(--color-dark-amethyst); }
+  .bar-track { height: 6px; background: var(--color-soft-blush); border-radius: 999px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 999px; transition: width .7s ease; }
+
+  /* platform dots */
+  .platform-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* recent inquiries mini list */
+  .inq-mini { display: flex; align-items: center; gap: .75rem; padding: .7rem 0; border-bottom: 1px solid var(--border-default); }
+  .inq-mini:last-child { border-bottom: none; }
+  .inq-mini-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-soft-blush); color: var(--color-berry-blush); display: flex; align-items: center; justify-content: center; font-size: .78rem; font-weight: 700; flex-shrink: 0; }
+  .inq-mini-name { font-size: .83rem; font-weight: 600; color: var(--color-dark-amethyst); margin: 0 0 1px; }
+  .inq-mini-date { font-size: .72rem; color: var(--text-secondary); margin: 0; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-left: auto; }
+
+  /* status badge */
+  .s-badge { font-size: .65rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .4px; flex-shrink: 0; }
+
+  /* coming soon card */
+  .coming-soon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.75rem; }
+  .cs-card { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-default); padding: 1.25rem; box-shadow: var(--shadow-sm); opacity: .7; }
+  .cs-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+  .cs-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .soon-pill { font-size: .62rem; font-weight: 700; background: var(--color-soft-blush); color: var(--color-berry-blush); padding: 2px 8px; border-radius: 999px; letter-spacing: .5px; text-transform: uppercase; }
+  .cs-card h5 { font-size: .82rem; font-weight: 600; color: var(--color-dark-amethyst); margin: 0 0 .2rem; }
+  .cs-card p { font-size: .75rem; color: var(--text-secondary); margin: 0; }
+
+  /* empty inline */
+  .inline-empty { text-align: center; padding: 1.5rem 1rem; color: var(--text-secondary); font-size: .82rem; }
+  .inline-empty span { display: block; font-size: 1.5rem; margin-bottom: .4rem; }
+
+  @media(max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; }
+    .stat-row { grid-template-columns: 1fr 1fr; }
+  }
+  @media(max-width: 480px) {
+    .stat-row { grid-template-columns: 1fr 1fr; }
+    .coming-soon-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <a href="{{ url_for('dashboard.home') }}" class="back-link">
+          <i class="bi bi-arrow-left"></i> Back to dashboard
+        </a>
+        <h1>📊 Analytics</h1>
+        <p>A snapshot of your Creatora presence and activity.</p>
+      </div>
+    </div>
+
+    <!-- ── OVERVIEW STATS ── -->
+    <p class="section-label">Overview</p>
+    <div class="stat-row">
+
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon" style="background:#FBEAF0;">🗂️</div>
+        </div>
+        <div class="stat-value">{{ portfolio_count }}</div>
+        <p class="stat-label">Portfolio items</p>
+        <p class="stat-sub">{{ featured_count }} featured</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon" style="background:#FBEAF0;">📥</div>
+        </div>
+        <div class="stat-value">{{ total_inquiries }}</div>
+        <p class="stat-label">Total inquiries</p>
+        <p class="stat-sub">{{ new_count }} new</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon" style="background:#E1F5EE;">✅</div>
+        </div>
+        <div class="stat-value">{{ booked_count }}</div>
+        <p class="stat-label">Bookings</p>
+        <p class="stat-sub">{{ completed_count }} completed</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon" style="background:#E6F1FB;">🤝</div>
+        </div>
+        <div class="stat-value">{{ total_collabs }}</div>
+        <p class="stat-label">Collabs posted</p>
+        <p class="stat-sub">{{ active_collabs }} open</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon" style="background:#E1F5F0;">📅</div>
+        </div>
+        <div class="stat-value">{{ total_posts }}</div>
+        <p class="stat-label">Content posts</p>
+        <p class="stat-sub">{{ scheduled_posts }} scheduled</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon" style="background:#E1F5F0;">📍</div>
+        </div>
+        <div class="stat-value">{{ total_locations }}</div>
+        <p class="stat-label">Locations shared</p>
+        <p class="stat-sub">on SceneScout</p>
+      </div>
+
+    </div>
+
+    <!-- ── CONVERSION HIGHLIGHT ── -->
+    {% if total_inquiries > 0 %}
+    <div class="conversion-card">
+      <div>
+        <div class="conv-val">{{ conversion_rate }}%</div>
+        <p class="conv-label">Booking conversion rate</p>
+      </div>
+      <div class="conv-bar-wrap">
+        <p class="conv-desc">{{ booked_count }} of {{ total_inquiries }} inquiries converted to a booking.</p>
+        <div class="conv-bar-track">
+          <div class="conv-bar-fill" style="width: {{ conversion_rate }}%;"></div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ── TWO COL: inquiry breakdown + content breakdown ── -->
+    <div class="two-col">
+
+      <!-- Inquiry pipeline -->
+      <div class="s-card">
+        <div class="s-card-header">
+          <div class="s-card-icon" style="background:#FBEAF0;">📥</div>
+          <h3>Inquiry pipeline</h3>
+          <a href="{{ url_for('dashboard.crm') }}">View CRM →</a>
+        </div>
+        <div class="s-card-body">
+          {% if total_inquiries > 0 %}
+            {% for label, count, color, emoji in [
+              ('New',        new_count,        '#A33E7E', '🆕'),
+              ('Discussion', discussion_count, '#3078A4', '💬'),
+              ('Booked',     booked_count,     '#2a6b3c', '✅'),
+              ('Completed',  completed_count,  '#5a4a6b', '🏁'),
+            ] %}
+            <div class="breakdown-item">
+              <div class="breakdown-row">
+                <span class="breakdown-label">
+                  <span>{{ emoji }}</span> {{ label }}
+                </span>
+                <span class="breakdown-count">{{ count }}</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: {{ (count / total_inquiries * 100)|int }}%; background: {{ color }};"></div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="inline-empty"><span>📭</span>No inquiries yet.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Content breakdown -->
+      <div class="s-card">
+        <div class="s-card-header">
+          <div class="s-card-icon" style="background:#E1F5F0;">📅</div>
+          <h3>Content posts</h3>
+          <a href="{{ url_for('dashboard.planner') }}">View planner →</a>
+        </div>
+        <div class="s-card-body">
+          {% if total_posts > 0 %}
+            <!-- By status -->
+            {% for label, count, color in [
+              ('Scheduled',  scheduled_posts, '#3E828E'),
+              ('Published',  published_posts, '#2a6b3c'),
+              ('Draft',      draft_posts,     '#A33E7E'),
+            ] %}
+            <div class="breakdown-item">
+              <div class="breakdown-row">
+                <span class="breakdown-label">{{ label }}</span>
+                <span class="breakdown-count">{{ count }}</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: {{ (count / total_posts * 100)|int }}%; background: {{ color }};"></div>
+              </div>
+            </div>
+            {% endfor %}
+
+            {% if platform_counts %}
+            <hr style="border-color: var(--border-default); margin: 1rem 0 .9rem;">
+            <p style="font-size: .72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: .75rem;">By platform</p>
+            {% for platform, count in platform_counts.items() %}
+            {% set pc = {'instagram':'#E1306C','tiktok':'#010101','youtube':'#FF0000'}.get(platform, '#A33E7E') %}
+            <div class="breakdown-item">
+              <div class="breakdown-row">
+                <span class="breakdown-label">
+                  <span class="platform-dot" style="background: {{ pc }};"></span>
+                  {{ platform|title }}
+                </span>
+                <span class="breakdown-count">{{ count }}</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: {{ (count / total_posts * 100)|int }}%; background: {{ pc }};"></div>
+              </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+          {% else %}
+          <div class="inline-empty"><span>📆</span>No posts yet.</div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── TWO COL: recent inquiries + collabs ── -->
+    <div class="two-col">
+
+      <!-- Recent inquiries -->
+      <div class="s-card">
+        <div class="s-card-header">
+          <div class="s-card-icon" style="background:#FBEAF0;">🕐</div>
+          <h3>Recent inquiries</h3>
+          <a href="{{ url_for('dashboard.crm') }}">All inquiries →</a>
+        </div>
+        <div class="s-card-body">
+          {% if recent_inquiries %}
+            {% for inq in recent_inquiries %}
+            <div class="inq-mini">
+              <div class="inq-mini-avatar">{{ inq.name[0]|upper }}</div>
+              <div style="min-width:0;flex:1;">
+                <p class="inq-mini-name">{{ inq.name }}</p>
+                <p class="inq-mini-date">{{ inq.created_at.strftime('%b %d, %Y') }}</p>
+              </div>
+              {% if inq.status == 'new' %}
+                <span class="s-badge" style="background:#FBEAF0;color:#A33E7E;">New</span>
+              {% elif inq.status == 'discussion' %}
+                <span class="s-badge" style="background:#E6F1FB;color:#3078A4;">Talk</span>
+              {% elif inq.status == 'booked' %}
+                <span class="s-badge" style="background:#E1F5EE;color:#2a6b3c;">Booked</span>
+              {% else %}
+                <span class="s-badge" style="background:var(--border-default);color:var(--text-secondary);">Done</span>
+              {% endif %}
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="inline-empty"><span>📭</span>No inquiries yet.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Collabs summary -->
+      <div class="s-card">
+        <div class="s-card-header">
+          <div class="s-card-icon" style="background:#E6F1FB;">🤝</div>
+          <h3>Collabs</h3>
+          <a href="{{ url_for('dashboard.my_collabs') }}">Manage →</a>
+        </div>
+        <div class="s-card-body">
+          {% if total_collabs > 0 %}
+            {% for label, count, color in [
+              ('Open',   active_collabs, '#2a6b3c'),
+              ('Closed', closed_collabs, '#5a4a6b'),
+            ] %}
+            <div class="breakdown-item">
+              <div class="breakdown-row">
+                <span class="breakdown-label">{{ label }}</span>
+                <span class="breakdown-count">{{ count }}</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: {{ (count / total_collabs * 100)|int }}%; background: {{ color }};"></div>
+              </div>
+            </div>
+            {% endfor %}
+
+            <div style="margin-top:1.1rem;padding-top:1rem;border-top:1px solid var(--border-default);display:flex;gap:1rem;">
+              <div style="text-align:center;flex:1;">
+                <div style="font-size:1.5rem;font-weight:700;color:var(--color-dark-amethyst);font-family:var(--font-heading);">{{ total_collabs }}</div>
+                <div style="font-size:.72rem;color:var(--text-secondary);">Total posted</div>
+              </div>
+              <div style="width:1px;background:var(--border-default);"></div>
+              <div style="text-align:center;flex:1;">
+                <div style="font-size:1.5rem;font-weight:700;color:#2a6b3c;font-family:var(--font-heading);">{{ active_collabs }}</div>
+                <div style="font-size:.72rem;color:var(--text-secondary);">Still open</div>
+              </div>
+            </div>
+          {% else %}
+          <div class="inline-empty"><span>🤝</span>No collabs posted yet.</div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── COMING SOON ── -->
+    <p class="section-label">Coming soon</p>
+    <div class="coming-soon-grid">
+      {% for icon, bg, title, desc in [
+        ('👁️',  '#EDE8F5', 'Profile views',      'See how many people visited your public profile.'),
+        ('📈',  '#FBEAF0', 'Inquiry trend',      'Track how your inquiries grow week over week.'),
+        ('💰',  '#E1F5EE', 'Revenue tracker',    'Log and visualise your bookings income over time.'),
+        ('🌍',  '#E1F5F0', 'Audience location',  'Discover where your visitors and clients come from.'),
+        ('⭐',  '#FDF0EB', 'Top portfolio item', 'See which work gets the most attention.'),
+        ('📣',  '#E6F1FB', 'Collab reach',       'How many creators applied to your open collabs.'),
+      ] %}
+      <div class="cs-card">
+        <div class="cs-card-top">
+          <div class="cs-icon" style="background:{{ bg }};">{{ icon }}</div>
+          <span class="soon-pill">Soon</span>
+        </div>
+        <h5>{{ title }}</h5>
+        <p>{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

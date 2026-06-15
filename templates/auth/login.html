@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Log in — Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--border-default);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: white;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.auth-input:focus { border-color: var(--color-berry-blush); }
+.auth-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  display: block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section style="min-height: 90vh; background: var(--color-lavender-blush); padding: 4rem 1rem; display: flex; align-items: center;">
+  <div class="container">
+    <div style="max-width: 420px; margin: 0 auto;">
+
+      <!-- Header -->
+      <div style="text-align: center; margin-bottom: 2.5rem;">
+        <h1 style="font-size: 2rem; color: var(--color-dark-amethyst); margin-bottom: 0.5rem;">Welcome back</h1>
+        <p style="color: var(--text-secondary);">New here? <a href="{{ url_for('auth.register') }}" style="color: var(--color-berry-blush); font-weight: 500;">Create an account</a></p>
+      </div>
+
+      <!-- Card -->
+      <div style="background: white; border-radius: 20px; padding: 2.5rem; box-shadow: var(--shadow-md);">
+        <form method="POST" action="{{ url_for('auth.login') }}">
+
+          <div style="margin-bottom: 1.25rem;">
+            <label class="auth-label">Email</label>
+            <input class="auth-input" type="email" name="email" placeholder="you@email.com" required autofocus>
+          </div>
+
+          <div style="margin-bottom: 0.5rem;">
+            <label class="auth-label">Password</label>
+            <input class="auth-input" type="password" name="password" placeholder="••••••••" required>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;">
+            <input type="checkbox" name="remember" id="remember" style="accent-color: var(--color-berry-blush);">
+            <label for="remember" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">Remember me</label>
+          </div>
+
+          <button type="submit" style="width: 100%; background: var(--color-dark-amethyst); color: white; border: none; border-radius: 999px; padding: 0.85rem; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+            Log in →
+          </button>
+<p class="text-center mt-2">
+  <a href="{{ url_for('auth.forgot_password') }}">Forgot your password?</a>
+</p>
+        </form>
+
+        <!-- Divider -->
+        <div style="display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0;">
+          <div style="flex: 1; height: 1px; background: var(--border-default);"></div>
+          <span style="font-size: 0.78rem; color: var(--text-secondary);">or try a demo account</span>
+          <div style="flex: 1; height: 1px; background: var(--border-default);"></div>
+        </div>
+
+        <!-- Quick demo logins -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          {% for name, email in [
+            ('📸 Sofia', 'sofia@creatora.com'),
+            ('🎬 Luca',  'luca@creatora.com'),
+            ('💄 Elena', 'elena@creatora.com'),
+            ('🍳 Nora',  'nora@creatora.com'),
+          ] %}
+          <button onclick="fillDemo('{{ email }}')"
+            style="background: var(--color-lavender-blush); border: 1px solid var(--border-default); border-radius: 8px; padding: 0.5rem; font-size: 0.78rem; color: var(--color-dark-amethyst); cursor: pointer; font-weight: 500;">
+            {{ name }}
+          </button>
+          {% endfor %}
+        </div>
+        <p style="text-align: center; font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.5rem; margin-bottom: 0;">All demo passwords: <strong>Test1234!</strong></p>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{% block extra_js %}
+<script>
+function fillDemo(email) {
+  document.querySelector('input[name="email"]').value = email;
+  document.querySelector('input[name="password"]').value = 'Test1234!';
+}
+</script>
+{% endblock %}
+{% endblock %}

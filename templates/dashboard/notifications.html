@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Notifications — Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #F2EDF7; }
+  footer.footer-creatora { margin-top: 0 !important; }
+  .dash-page { min-height: 100vh; padding: 2rem 1rem 4rem; }
+
+  /* header */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+  .back-link { font-size: .82rem; color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: .35rem; margin-bottom: .4rem; transition: color var(--transition-fast); }
+  .back-link:hover { color: var(--color-berry-blush); }
+  .page-header h1 { font-size: 1.5rem; color: var(--color-dark-amethyst); font-family: var(--font-heading); margin: 0 0 .2rem; }
+  .page-header p { font-size: .85rem; color: var(--text-secondary); margin: 0; }
+
+  /* container card */
+  .notif-card { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-default); box-shadow: var(--shadow-sm); overflow: hidden; max-width: 680px; }
+
+  /* list items */
+  .notif-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border-default); transition: background var(--transition-fast); position: relative; }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item.unread { background: #fdf5fb; }
+  .notif-item.unread::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--color-berry-blush); border-radius: 0 2px 2px 0; }
+  .notif-item:hover { background: var(--color-lavender-blush); }
+
+  /* icon bubble */
+  .notif-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; margin-top: .1rem; }
+  .notif-icon.inquiry { background: #FBEAF0; }
+  .notif-icon.collab  { background: #E6F1FB; }
+  .notif-icon.system  { background: #EDE8F5; }
+
+  /* text */
+  .notif-title { font-size: .875rem; font-weight: 600; color: var(--color-dark-amethyst); margin: 0 0 .2rem; }
+  .notif-msg   { font-size: .8rem; color: var(--text-secondary); margin: 0 0 .35rem; }
+  .notif-time  { font-size: .72rem; color: var(--text-secondary); }
+
+  /* action link */
+  .notif-action { margin-left: auto; flex-shrink: 0; }
+  .notif-action a { font-size: .78rem; color: var(--color-berry-blush); font-weight: 500; text-decoration: none; white-space: nowrap; }
+  .notif-action a:hover { text-decoration: underline; }
+
+  /* empty */
+  .notif-empty { text-align: center; padding: 4rem 1.5rem; }
+  .notif-empty .empty-icon { font-size: 2.8rem; display: block; margin-bottom: 1rem; }
+  .notif-empty h4 { font-family: var(--font-heading); color: var(--color-dark-amethyst); font-size: 1.2rem; margin-bottom: .4rem; }
+  .notif-empty p { font-size: .85rem; color: var(--text-secondary); margin: 0; }
+
+  /* clear btn */
+  .btn-ghost-danger { background: none; border: 1px solid #f5c6cb; color: #c0392b; border-radius: var(--radius-sm); padding: .45rem 1rem; font-size: .8rem; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+  .btn-ghost-danger:hover { background: #fde8e8; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <a href="{{ url_for('dashboard.home') }}" class="back-link">
+          <i class="bi bi-arrow-left"></i> Back to dashboard
+        </a>
+        <h1>🔔 Notifications</h1>
+        <p>
+          {% if notifications %}
+            {{ notifications|length }} notification{{ 's' if notifications|length != 1 else '' }} — all marked as read.
+          {% else %}
+            You're all caught up.
+          {% endif %}
+        </p>
+      </div>
+      {% if notifications %}
+      <form method="POST" action="{{ url_for('dashboard.clear_notifications') }}"
+            onsubmit="return confirm('Clear all notifications?');">
+        <button type="submit" class="btn-ghost-danger">
+          <i class="bi bi-trash me-1"></i> Clear all
+        </button>
+      </form>
+      {% endif %}
+    </div>
+
+    <div class="notif-card">
+      {% if notifications %}
+        {% for n in notifications %}
+        <div class="notif-item {{ 'unread' if not n.is_read else '' }}">
+
+          <!-- Icon -->
+          <div class="notif-icon {{ n.type }}">
+            {% if n.type == 'inquiry' %}📥
+            {% elif n.type == 'collab' %}🤝
+            {% else %}✨
+            {% endif %}
+          </div>
+
+          <!-- Text -->
+          <div style="flex:1;min-width:0;">
+            <p class="notif-title">{{ n.title }}</p>
+            {% if n.message %}<p class="notif-msg">{{ n.message }}</p>{% endif %}
+            <span class="notif-time">
+              <i class="bi bi-clock me-1"></i>
+              {{ n.created_at.strftime('%b %d, %Y · %H:%M') }}
+            </span>
+          </div>
+
+          <!-- Action -->
+          {% if n.link %}
+          <div class="notif-action">
+            <a href="{{ n.link }}">View →</a>
+          </div>
+          {% endif %}
+
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="notif-empty">
+          <span class="empty-icon">🔔</span>
+          <h4>No notifications yet</h4>
+          <p>We'll let you know when you get a new inquiry or your collab goes live.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

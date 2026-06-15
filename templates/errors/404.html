@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Page not found — Creatora{% endblock %}
+
+{% block content %}
+<div class="empty-state">
+  <h1>Page not found</h1>
+  <p>That page does not exist.</p>
+  <a class="btn btn-primary" href="{{ url_for('public.index') }}">Go home</a>
+</div>
+{% endblock %}

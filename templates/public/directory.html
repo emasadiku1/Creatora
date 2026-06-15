@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% block title %}Discover Creators — Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Kill the mt-5 the base template adds to the footer */
+  footer.footer-creatora { margin-top: 0 !important; }
+  /* ── Page-level layout ── */
+  .discover-hero {
+    background: var(--color-dark-amethyst);
+    padding: 3.5rem 1rem 2.5rem;
+  }
+
+  /* ── Search bar ── */
+  .search-wrap {
+    position: relative;
+    max-width: 520px;
+    margin: 1.5rem auto 0;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 0.75rem 1.25rem 0.75rem 3rem;
+    border-radius: 999px;
+    border: none;
+    background: rgba(255,235,237,0.1);
+    color: var(--color-lavender-blush);
+    font-size: 0.95rem;
+    outline: none;
+    transition: background var(--transition-fast);
+  }
+  .search-wrap input::placeholder { color: rgba(255,235,237,0.4); }
+  .search-wrap input:focus { background: rgba(255,235,237,0.15); }
+  .search-wrap .bi-search {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,235,237,0.45);
+    font-size: 1rem;
+  }
+
+  /* ── Role filter pills ── */
+  .role-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1.25rem;
+  }
+  .role-pill {
+    background: rgba(255,235,237,0.08);
+    color: rgba(255,235,237,0.7);
+    border: 1px solid rgba(255,235,237,0.15);
+    padding: 5px 16px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+  .role-pill:hover {
+    background: rgba(255,235,237,0.15);
+    color: var(--color-lavender-blush);
+  }
+  .role-pill.active {
+    background: var(--color-berry-blush);
+    color: white;
+    border-color: var(--color-berry-blush);
+  }
+
+  /* ── Results bar ── */
+  .results-bar {
+    background: white;
+    border-bottom: 1px solid var(--border-default);
+    padding: 0.9rem 0;
+  }
+
+  /* ── Creator cards grid ── */
+  .creators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .creator-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-default);
+    padding: 1.5rem;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+  }
+  .creator-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
+  }
+
+  .creator-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--color-berry-blush);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.3rem;
+    color: white;
+    font-weight: 700;
+    font-family: var(--font-heading);
+  }
+  .creator-card h5 {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-dark-amethyst);
+    margin-bottom: 0.2rem;
+  }
+  .creator-role {
+    font-size: 0.78rem;
+    color: var(--color-berry-blush);
+    font-weight: 500;
+    margin-bottom: 0.6rem;
+  }
+  .creator-location {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+  }
+  .creator-location .bi { font-size: 0.7rem; margin-right: 2px; }
+  .creator-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .creator-tag {
+    background: var(--color-soft-blush);
+    color: var(--color-berry-blush);
+    font-size: 0.7rem;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+
+  /* avatar color variants per role */
+  .avatar-photographer  { background: var(--color-berry-blush); }
+  .avatar-videographer  { background: var(--color-dark-amethyst); }
+  .avatar-digital_artist{ background: var(--color-pacific-cyan); }
+  .avatar-illustrator   { background: var(--color-burnt-peach); }
+  .avatar-architect     { background: #5a4a6b; }
+  .avatar-influencer    { background: var(--color-rich-cerulean); }
+  .avatar-content_creator { background: #3E828E; }
+  .avatar-beauty_creator{ background: #c2607a; }
+  .avatar-lifestyle_creator { background: var(--color-muted-teal); }
+  .avatar-food_creator  { background: #b06a3a; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--text-secondary);
+  }
+  .empty-state .bi { font-size: 3rem; color: var(--color-almond-cream); margin-bottom: 1rem; display: block; }
+
+  /* ── Pagination ── */
+  .page-link {
+    color: var(--color-berry-blush);
+    border-color: var(--border-default);
+  }
+  .page-item.active .page-link {
+    background-color: var(--color-berry-blush);
+    border-color: var(--color-berry-blush);
+  }
+  .page-link:hover { color: var(--color-berry-blush); background: var(--color-soft-blush); }
+
+  /* ── Sort dropdown ── */
+  .sort-select {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-full);
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    background: white;
+    outline: none;
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    .creators-grid { grid-template-columns: repeat(2, 1fr); }
+    .discover-hero { padding: 2.5rem 1rem 2rem; }
+  }
+  @media (max-width: 480px) {
+    .creators-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO / FILTERS -->
+<section class="discover-hero">
+  <div class="container text-center">
+    <p style="color: var(--color-powder-blush); font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">DISCOVER TALENT</p>
+    <h1 style="font-size: 2.6rem; color: var(--color-lavender-blush); margin-bottom: 0.5rem;">Find your next creator</h1>
+    <p style="color: rgba(255,235,237,0.6); font-size: 1rem; max-width: 460px; margin: 0 auto;">Browse photographers, videographers, artists and more — all in one place.</p>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <i class="bi bi-search"></i>
+      <input type="text" id="searchInput" placeholder="Search by name, role, or location…" autocomplete="off">
+    </div>
+
+    <!-- Role filter pills -->
+    <div class="role-filters">
+      <a href="{{ url_for('public.directory') }}"
+         class="role-pill {% if not active_role %}active{% endif %}">All</a>
+      {% for value, label, icon in [
+        ('photographer',     'Photographer',   '📸'),
+        ('videographer',     'Videographer',   '🎬'),
+        ('digital_artist',   'Digital Artist', '🎨'),
+        ('illustrator',      'Illustrator',    '✏️'),
+        ('architect',        'Architect',      '🏗️'),
+        ('influencer',       'Influencer',     '📱'),
+        ('beauty_creator',   'Beauty',         '💄'),
+        ('food_creator',     'Food Creator',   '🍳'),
+      ] %}
+      <a href="{{ url_for('public.directory', role=value) }}"
+         class="role-pill {% if active_role == value %}active{% endif %}">
+        {{ icon }} {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS BAR -->
+<div class="results-bar">
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+      {% if creators.total == 0 %}
+        No creators found
+      {% elif active_role %}
+        <strong style="color: var(--color-dark-amethyst);">{{ creators.total }}</strong> {{ active_role | replace('_',' ') | title }}s
+      {% else %}
+        <strong style="color: var(--color-dark-amethyst);">{{ creators.total }}</strong> creators
+      {% endif %}
+    </p>
+    <select class="sort-select" onchange="window.location=this.value">
+      <option value="{{ url_for('public.directory', role=active_role) }}">Newest first</option>
+      <option value="{{ url_for('public.directory', role=active_role) }}">Most popular</option>
+    </select>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<section style="padding: 2.5rem 1rem 4rem; background: var(--color-lavender-blush);">
+  <div class="container">
+
+    {% if creators.items %}
+    <div class="creators-grid" id="creatorsGrid">
+      {% for creator in creators.items %}
+      <a href="{{ url_for('public.profile', username=creator.username) }}" class="creator-card">
+
+        <!-- Avatar -->
+        <div class="creator-avatar avatar-{{ creator.role }}">
+          {% if creator.avatar %}
+            <img src="{{ url_for('static', filename='uploads/' + creator.avatar) }}"
+                 alt="{{ creator.display_name }}"
+                 style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+          {% else %}
+            {{ (creator.display_name or creator.username)[0] | upper }}
+          {% endif %}
+        </div>
+
+        <!-- Info -->
+        <h5>{{ creator.display_name or creator.username }}</h5>
+        <p class="creator-role">{{ creator.role | replace('_',' ') | title }}</p>
+
+        {% if creator.location %}
+        <p class="creator-location">
+          <i class="bi bi-geo-alt"></i>{{ creator.location }}
+        </p>
+        {% endif %}
+
+        <!-- Tags — role-based defaults if no custom tags -->
+        <div class="creator-tags">
+          {% if creator.role == 'photographer' %}
+            <span class="creator-tag">portrait</span>
+            <span class="creator-tag">editorial</span>
+          {% elif creator.role == 'videographer' %}
+            <span class="creator-tag">reels</span>
+            <span class="creator-tag">film</span>
+          {% elif creator.role in ['digital_artist','illustrator'] %}
+            <span class="creator-tag">illustration</span>
+            <span class="creator-tag">branding</span>
+          {% elif creator.role == 'architect' %}
+            <span class="creator-tag">design</span>
+            <span class="creator-tag">spaces</span>
+          {% elif creator.role in ['influencer','content_creator'] %}
+            <span class="creator-tag">lifestyle</span>
+            <span class="creator-tag">collabs</span>
+          {% elif creator.role == 'beauty_creator' %}
+            <span class="creator-tag">makeup</span>
+            <span class="creator-tag">bridal</span>
+          {% elif creator.role == 'food_creator' %}
+            <span class="creator-tag">recipes</span>
+            <span class="creator-tag">brands</span>
+          {% else %}
+            <span class="creator-tag">{{ creator.role | replace('_',' ') }}</span>
+          {% endif %}
+        </div>
+
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    {% if creators.pages > 1 %}
+    <nav class="mt-5 d-flex justify-content-center">
+      <ul class="pagination">
+        {% if creators.has_prev %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('public.directory', role=active_role, page=creators.prev_num) }}">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+        {% endif %}
+
+        {% for p in creators.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if p %}
+          <li class="page-item {% if p == creators.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('public.directory', role=active_role, page=p) }}">{{ p }}</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+
+        {% if creators.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('public.directory', role=active_role, page=creators.next_num) }}">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty state -->
+    <div class="empty-state">
+      <i class="bi bi-people"></i>
+      <h4 style="color: var(--color-dark-amethyst); margin-bottom: 0.5rem;">No creators found</h4>
+      <p style="font-size: 0.9rem;">Try a different role or check back soon.</p>
+      <a href="{{ url_for('public.directory') }}" style="display:inline-block; margin-top:1rem; background: var(--color-dark-amethyst); color: white; padding: 0.65rem 1.75rem; border-radius: 999px; font-size: 0.9rem; text-decoration: none;">Browse all creators</a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<!-- JOIN CTA BANNER -->
+<section style="background: var(--color-berry-blush); padding: 3rem 1rem; text-align: center;">
+  <div class="container">
+    <h2 style="color: white; font-size: 1.8rem; margin-bottom: 0.5rem;">Are you a creator?</h2>
+    <p style="color: rgba(255,255,255,0.8); margin-bottom: 1.5rem;">Join Creatora and get discovered by clients looking for your exact skills.</p>
+    <a href="{{ url_for('auth.register') }}" style="background: white; color: var(--color-berry-blush); padding: 0.75rem 2rem; border-radius: 999px; font-weight: 600; text-decoration: none; font-size: 0.95rem;">Join for free</a>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Live client-side search filter
+  const input = document.getElementById('searchInput');
+  const grid  = document.getElementById('creatorsGrid');
+
+  if (input && grid) {
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase().trim();
+      grid.querySelectorAll('.creator-card').forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+  }
+</script>
+{% endblock %}

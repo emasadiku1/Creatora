@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+{% block title %}My Collabs — Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #F2EDF7; }
+  footer.footer-creatora { margin-top: 0 !important; }
+  .dash-page { min-height: 100vh; padding: 2rem 1rem 4rem; }
+
+  .back-link { font-size:.82rem; color:var(--text-secondary); text-decoration:none; display:inline-flex; align-items:center; gap:.35rem; margin-bottom:.35rem; }
+  .back-link:hover { color:var(--color-berry-blush); }
+  .page-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+  .page-header h1 { font-size:1.5rem; color:var(--color-dark-amethyst); font-family:var(--font-heading); margin:0; }
+
+  /* filter tabs */
+  .filter-tabs { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.75rem; }
+  .filter-tab { padding:.45rem 1.1rem; border-radius:999px; border:1.5px solid var(--border-default); background:white; color:var(--text-secondary); font-size:.82rem; font-weight:500; cursor:pointer; text-decoration:none; transition:all var(--transition-fast); }
+  .filter-tab:hover { border-color:var(--color-berry-blush); color:var(--color-berry-blush); }
+  .filter-tab.active { border-color:var(--color-dark-amethyst); background:var(--color-dark-amethyst); color:white; }
+
+  /* cards grid */
+  .collabs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.25rem; }
+
+  .collab-card { background:white; border-radius:var(--radius-lg); border:1px solid var(--border-default); padding:1.4rem; display:flex; flex-direction:column; gap:.9rem; box-shadow:var(--shadow-sm); transition:box-shadow var(--transition-normal),transform var(--transition-normal); }
+  .collab-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .collab-card.closed { opacity:.6; }
+
+  /* header row */
+  .collab-card-header { display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem; }
+  .open-badge  { display:inline-flex; align-items:center; gap:4px; background:#E1F5EE; color:#2a6b3c; font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap; flex-shrink:0; }
+  .open-badge::before  { content:''; display:inline-block; width:6px; height:6px; border-radius:50%; background:#2a6b3c; }
+  .closed-badge { display:inline-flex; align-items:center; gap:4px; background:var(--border-default); color:var(--text-secondary); font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap; flex-shrink:0; }
+  .closed-badge::before { content:''; display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--text-secondary); }
+
+  .collab-title { font-size:1rem; font-weight:600; color:var(--color-dark-amethyst); line-height:1.3; }
+  .collab-desc  { font-size:.825rem; color:var(--text-secondary); line-height:1.55; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+  /* tags */
+  .collab-tags { display:flex; flex-wrap:wrap; gap:.4rem; }
+  .collab-tag { font-size:.72rem; font-weight:500; padding:3px 10px; border-radius:999px; }
+  .tag-role     { background:rgba(62,130,142,.1); color:var(--color-pacific-cyan); }
+  .tag-location { background:rgba(39,21,61,.07); color:var(--color-dark-amethyst); }
+  .tag-deadline { background:#FDF0EB; color:var(--color-burnt-peach); }
+  .tag-deadline.soon { background:#FBEAF0; color:var(--color-berry-blush); font-weight:700; }
+
+  /* footer */
+  .collab-footer { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding-top:.75rem; border-top:1px solid var(--border-default); margin-top:auto; flex-wrap:wrap; }
+  .collab-date { font-size:.75rem; color:var(--text-secondary); }
+
+  .footer-actions { display:flex; gap:.5rem; }
+  .act-btn { background:transparent; border:1px solid var(--border-default); border-radius:var(--radius-sm); width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-size:.8rem; cursor:pointer; color:var(--text-secondary); transition:all var(--transition-fast); text-decoration:none; }
+  .act-btn:hover { border-color:var(--color-berry-blush); color:var(--color-berry-blush); background:var(--color-lavender-blush); }
+  .act-btn.delete:hover { border-color:#c0392b; color:#c0392b; background:#fde8e8; }
+
+  .toggle-btn { font-size:.78rem; font-weight:600; padding:.35rem .9rem; border-radius:999px; border:none; cursor:pointer; transition:all var(--transition-fast); }
+  .toggle-btn.open-now  { background:#E1F5EE; color:#2a6b3c; }
+  .toggle-btn.open-now:hover  { background:#c8f0d8; }
+  .toggle-btn.close-now { background:var(--color-soft-blush); color:var(--color-berry-blush); }
+  .toggle-btn.close-now:hover { background:#fdd; }
+
+  /* new collab CTA card */
+  .new-collab-card { background:linear-gradient(135deg,var(--color-dark-amethyst),#3a1a55); border-radius:var(--radius-lg); border:2px dashed rgba(163,62,126,.35); padding:1.4rem; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:.5rem; min-height:200px; cursor:pointer; transition:box-shadow var(--transition-normal),transform var(--transition-normal); text-decoration:none; }
+  .new-collab-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .new-collab-icon { width:44px; height:44px; border-radius:50%; background:rgba(163,62,126,.25); border:2px solid rgba(163,62,126,.4); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:var(--color-powder-blush); margin-bottom:.25rem; }
+  .new-collab-card h5 { font-size:.9rem; font-weight:600; color:white; margin:0; }
+  .new-collab-card p  { font-size:.78rem; color:rgba(255,235,237,.5); margin:0; }
+
+  /* browse banner */
+  .browse-banner { background:white; border-radius:var(--radius-lg); border:1px solid var(--border-default); padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1.75rem; box-shadow:var(--shadow-sm); }
+  .browse-banner p { margin:0; font-size:.875rem; color:var(--text-secondary); }
+  .browse-banner strong { color:var(--color-dark-amethyst); }
+
+  /* empty */
+  .collabs-empty { text-align:center; padding:4rem 1rem; background:white; border-radius:var(--radius-lg); border:1px solid var(--border-default); box-shadow:var(--shadow-sm); }
+  .collabs-empty .empty-icon { font-size:3rem; display:block; margin-bottom:1rem; }
+  .collabs-empty h5 { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.3rem; margin-bottom:.5rem; }
+  .collabs-empty p { font-size:.875rem; color:var(--text-secondary); max-width:360px; margin:0 auto; }
+
+  /* modal */
+  .modal-content { border-radius:var(--radius-lg); border:none; box-shadow:var(--shadow-lg); }
+  .modal-header { border-bottom:1px solid var(--border-default); padding:1.25rem 1.5rem; }
+  .modal-header .modal-title { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.15rem; }
+  .modal-body { padding:1.5rem; }
+  .modal-body .form-label { font-size:.85rem; font-weight:500; color:var(--text-primary); margin-bottom:.3rem; }
+  .modal-body .form-control, .modal-body .form-select { border-radius:var(--radius-sm); border-color:var(--border-default); font-size:.875rem; color:var(--text-primary); }
+  .modal-body .form-control:focus, .modal-body .form-select:focus { border-color:var(--color-berry-blush); box-shadow:0 0 0 3px rgba(163,62,126,.1); outline:none; }
+  .modal-footer { border-top:1px solid var(--border-default); padding:1rem 1.5rem; }
+
+  @media(max-width:576px) { .collabs-grid { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <a href="{{ url_for('dashboard.home') }}" class="back-link"><i class="bi bi-arrow-left"></i> Dashboard</a>
+        <h1>🤝 My Collabs</h1>
+      </div>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postCollabModal"
+              style="border-radius:999px;padding:.55rem 1.5rem;font-size:.875rem;">
+        <i class="bi bi-plus-lg me-1"></i>Post a collab
+      </button>
+    </div>
+
+    <!-- Browse banner -->
+    <div class="browse-banner">
+      <p><strong>Looking to team up?</strong> Browse open collab calls from other creators too.</p>
+      <a href="{{ url_for('public.collabs') }}"
+         style="font-size:.82rem;font-weight:600;color:var(--color-pacific-cyan);text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:.3rem;">
+        Browse all collabs <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    {% if collabs %}
+
+    <!-- Filter tabs -->
+    <div class="filter-tabs">
+      <a href="{{ url_for('dashboard.my_collabs') }}"
+         class="filter-tab {{ 'active' if not request.args.get('filter') }}">
+        All ({{ collabs|length }})
+      </a>
+      <a href="{{ url_for('dashboard.my_collabs', filter='open') }}"
+         class="filter-tab {{ 'active' if request.args.get('filter') == 'open' }}">
+        🟢 Open ({{ collabs|selectattr('is_open')|list|length }})
+      </a>
+      <a href="{{ url_for('dashboard.my_collabs', filter='closed') }}"
+         class="filter-tab {{ 'active' if request.args.get('filter') == 'closed' }}">
+        ⚫ Closed ({{ collabs|rejectattr('is_open')|list|length }})
+      </a>
+    </div>
+
+    <!-- Grid -->
+    {% set active_filter = request.args.get('filter', '') %}
+    <div class="collabs-grid">
+      {% for c in collabs %}
+      {% if not active_filter or (active_filter == 'open' and c.is_open) or (active_filter == 'closed' and not c.is_open) %}
+
+      <div class="collab-card {{ '' if c.is_open else 'closed' }}">
+
+        <!-- Header: title + status badge -->
+        <div class="collab-card-header">
+          <p class="collab-title">{{ c.title }}</p>
+          {% if c.is_open %}
+          <span class="open-badge">Open</span>
+          {% else %}
+          <span class="closed-badge">Closed</span>
+          {% endif %}
+        </div>
+
+        <!-- Description -->
+        {% if c.description %}
+        <p class="collab-desc">{{ c.description }}</p>
+        {% endif %}
+
+        <!-- Tags -->
+        <div class="collab-tags">
+          {% if c.role_needed %}
+          <span class="collab-tag tag-role"><i class="bi bi-person me-1"></i>{{ c.role_needed|replace('_',' ')|title }}</span>
+          {% endif %}
+          {% if c.location %}
+          <span class="collab-tag tag-location"><i class="bi bi-geo-alt me-1"></i>{{ c.location }}</span>
+          {% endif %}
+          {% if c.deadline %}
+            {% set days_left = (c.deadline - now).days %}
+            <span class="collab-tag tag-deadline {{ 'soon' if days_left <= 7 else '' }}">
+              <i class="bi bi-calendar3 me-1"></i>
+              {% if days_left <= 0 %}Deadline passed
+              {% elif days_left == 1 %}1 day left
+              {% elif days_left <= 7 %}{{ days_left }} days left
+              {% else %}{{ c.deadline.strftime('%b %d') }}{% endif %}
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="collab-footer">
+          <span class="collab-date">Posted {{ c.created_at.strftime('%b %d, %Y') }}</span>
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+
+            <!-- Toggle open/closed -->
+            <form method="POST" action="{{ url_for('dashboard.toggle_collab', collab_id=c.id) }}" style="margin:0;">
+              <button type="submit" class="toggle-btn {{ 'close-now' if c.is_open else 'open-now' }}">
+                {{ 'Close' if c.is_open else 'Reopen' }}
+              </button>
+            </form>
+
+            <div class="footer-actions">
+              <!-- Edit -->
+              <button class="act-btn" title="Edit"
+                      data-bs-toggle="modal" data-bs-target="#editCollabModal"
+                      data-id="{{ c.id }}"
+                      data-title="{{ c.title }}"
+                      data-desc="{{ c.description or '' }}"
+                      data-role="{{ c.role_needed or '' }}"
+                      data-location="{{ c.location or '' }}"
+                      data-deadline="{{ c.deadline.strftime('%Y-%m-%d') if c.deadline else '' }}">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <!-- Delete -->
+              <form method="POST" action="{{ url_for('dashboard.delete_collab', collab_id=c.id) }}" style="margin:0;">
+                <button type="submit" class="act-btn delete" onclick="return confirm('Delete this collab?')">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+      {% endif %}
+      {% endfor %}
+
+      <!-- Post new CTA card -->
+      <button class="new-collab-card" data-bs-toggle="modal" data-bs-target="#postCollabModal"
+              style="border:none;">
+        <div class="new-collab-icon"><i class="bi bi-plus-lg"></i></div>
+        <h5>Post a new call</h5>
+        <p>Let the community know you're looking for a creative partner.</p>
+      </button>
+
+    </div>
+
+    {% else %}
+
+    <!-- Empty state -->
+    <div class="collabs-empty">
+      <span class="empty-icon">🤝</span>
+      <h5>No collab calls yet</h5>
+      <p>Post your first call and let other creators know what you're working on.</p>
+      <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#postCollabModal"
+              style="border-radius:999px;padding:.6rem 1.75rem;">
+        <i class="bi bi-plus-lg me-1"></i>Post your first collab
+      </button>
+    </div>
+
+    {% endif %}
+
+  </div>
+</div>
+
+
+<!-- POST COLLAB MODAL -->
+<div class="modal fade" id="postCollabModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Post a Collaboration Call</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('public.post_collab') }}">
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Title <span style="color:var(--color-berry-blush)">*</span></label>
+            <input type="text" name="title" class="form-control"
+                   placeholder="e.g. Looking for a videographer for a brand shoot in June"
+                   required maxlength="120">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="3"
+                      placeholder="What's the project? What do you need from a collaborator?"></textarea>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label">Role needed</label>
+              <select name="role_needed" class="form-select">
+                <option value="">Any role</option>
+                <option value="photographer">📸 Photographer</option>
+                <option value="videographer">🎬 Videographer</option>
+                <option value="digital_artist">🎨 Digital Artist</option>
+                <option value="influencer">📱 Influencer</option>
+                <option value="beauty">💄 Beauty Creator</option>
+                <option value="food">🍳 Food Creator</option>
+                <option value="stylist">👗 Stylist</option>
+                <option value="makeup_artist">💅 Makeup Artist</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Location</label>
+              <input type="text" name="location" class="form-control"
+                     placeholder="e.g. Tirana, Albania" maxlength="100">
+            </div>
+          </div>
+
+          <div class="mb-1">
+            <label class="form-label">Deadline</label>
+            <input type="date" name="deadline" class="form-control">
+            <div class="form-text" style="font-size:.78rem;color:var(--text-secondary);">Leave blank to keep it open indefinitely.</div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:999px;">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="border-radius:999px;">Post collab call</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT COLLAB MODAL -->
+<div class="modal fade" id="editCollabModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Collab</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="editCollabForm">
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Title <span style="color:var(--color-berry-blush)">*</span></label>
+            <input type="text" name="title" id="ecTitle" class="form-control" required maxlength="120">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" id="ecDesc" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label">Role needed</label>
+              <select name="role_needed" id="ecRole" class="form-select">
+                <option value="">Any role</option>
+                <option value="photographer">📸 Photographer</option>
+                <option value="videographer">🎬 Videographer</option>
+                <option value="digital_artist">🎨 Digital Artist</option>
+                <option value="influencer">📱 Influencer</option>
+                <option value="beauty">💄 Beauty Creator</option>
+                <option value="food">🍳 Food Creator</option>
+                <option value="stylist">👗 Stylist</option>
+                <option value="makeup_artist">💅 Makeup Artist</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Location</label>
+              <input type="text" name="location" id="ecLocation" class="form-control" maxlength="100">
+            </div>
+          </div>
+
+          <div class="mb-1">
+            <label class="form-label">Deadline</label>
+            <input type="date" name="deadline" id="ecDeadline" class="form-control">
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:999px;">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="border-radius:999px;">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Populate edit modal
+document.querySelectorAll('[data-bs-target="#editCollabModal"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('ecTitle').value    = btn.dataset.title;
+    document.getElementById('ecDesc').value     = btn.dataset.desc;
+    document.getElementById('ecRole').value     = btn.dataset.role;
+    document.getElementById('ecLocation').value = btn.dataset.location;
+    document.getElementById('ecDeadline').value = btn.dataset.deadline;
+    document.getElementById('editCollabForm').action =
+      '/dashboard/collabs/' + btn.dataset.id + '/edit';
+  });
+});
+</script>
+{% endblock %}

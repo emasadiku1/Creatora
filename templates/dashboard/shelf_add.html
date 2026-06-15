@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Add Shelf Item — Creatora{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <h1>Add to Shelf</h1>
+    <p class="subtitle">Upload a file for others to download</p>
+  </div>
+  <a href="{{ url_for('dashboard.shelf') }}" class="btn btn-outline">← Back to Shelf</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+<div class="form-card">
+  <form method="POST" enctype="multipart/form-data">
+
+    <div class="form-group">
+      <label>Title *</label>
+      <input type="text" name="title" class="form-control" placeholder="e.g. Golden Hour Lightroom Preset Pack" required>
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea name="description" class="form-control" rows="3" placeholder="What's included, how to use it..."></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category</label>
+        <select name="category" class="form-control">
+          {% for cat in categories %}
+            <option value="{{ cat }}">{{ cat | capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tags</label>
+        <input type="text" name="tags" class="form-control" placeholder="lightroom, moody, portrait">
+      </div>
+    </div>
+
+    <!-- Pricing -->
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input type="checkbox" name="is_free" id="is_free" checked onchange="togglePrice()">
+        This is a free download
+      </label>
+    </div>
+    <div class="form-group" id="price_group" style="display:none">
+      <label>Price (USD)</label>
+      <input type="number" name="price" class="form-control" step="0.01" min="0" placeholder="9.99">
+      <small class="form-hint">Payments are simulated — no real charge will occur.</small>
+    </div>
+
+    <!-- Files -->
+    <div class="form-group">
+      <label>Downloadable File *</label>
+      <input type="file" name="file" class="form-control" accept=".zip,.pdf,.xmp,.cube,.png,.jpg,.jpeg,.ttf,.otf,.abr" required>
+      <small class="form-hint">Accepted: zip, pdf, xmp, cube, png, jpg, ttf, otf, abr</small>
+    </div>
+
+    <div class="form-group">
+      <label>Cover Image <span class="optional">(optional)</span></label>
+      <input type="file" name="cover_image" class="form-control" accept=".png,.jpg,.jpeg,.webp">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save to Shelf</button>
+      <a href="{{ url_for('dashboard.shelf') }}" class="btn btn-outline">Cancel</a>
+    </div>
+
+  </form>
+</div>
+
+<script>
+function togglePrice() {
+  const isFree = document.getElementById('is_free').checked;
+  document.getElementById('price_group').style.display = isFree ? 'none' : 'block';
+}
+</script>
+
+{% endblock %}

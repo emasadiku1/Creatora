@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% block title %}My Portfolio — Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #F2EDF7; }
+  footer.footer-creatora { margin-top: 0 !important; }
+  .dash-page { min-height: 100vh; padding: 2rem 1rem 4rem; }
+
+  /* page header */
+  .page-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+  .page-header h1 { font-size:1.5rem; color:var(--color-dark-amethyst); font-family:var(--font-heading); margin:0; }
+  .back-link { font-size:.82rem; color:var(--text-secondary); text-decoration:none; display:inline-flex; align-items:center; gap:.35rem; margin-bottom:.35rem; }
+  .back-link:hover { color:var(--color-berry-blush); }
+
+  /* upload shortcut */
+  .upload-card { background:white; border-radius:var(--radius-lg); border:2px dashed var(--border-default); padding:1.75rem; text-align:center; margin-bottom:2rem; cursor:pointer; transition:border-color var(--transition-fast),background var(--transition-fast); }
+  .upload-card:hover { border-color:var(--color-berry-blush); background:var(--color-lavender-blush); }
+  .upload-icon { width:48px; height:48px; border-radius:50%; background:var(--color-soft-blush); display:flex; align-items:center; justify-content:center; font-size:1.3rem; margin:0 auto .65rem; }
+  .upload-card h5 { font-size:.9rem; font-weight:600; color:var(--color-dark-amethyst); margin-bottom:.25rem; }
+  .upload-card p { font-size:.8rem; color:var(--text-secondary); margin:0; }
+
+  /* grid */
+  .portfolio-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.25rem; }
+
+  .p-card { background:white; border-radius:var(--radius-lg); border:1px solid var(--border-default); overflow:hidden; box-shadow:var(--shadow-sm); transition:box-shadow var(--transition-normal),transform var(--transition-normal); }
+  .p-card:hover { box-shadow:var(--shadow-md); transform:translateY(-3px); }
+  .p-card:hover .card-actions { opacity:1; }
+
+  .card-img-wrap { position:relative; aspect-ratio:4/3; background:var(--color-soft-blush); overflow:hidden; }
+  .card-img-wrap img { width:100%; height:100%; object-fit:cover; transition:transform .4s ease; }
+  .p-card:hover .card-img-wrap img { transform:scale(1.04); }
+  .card-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2.5rem; color:var(--color-powder-blush); }
+
+  .featured-badge { position:absolute; top:.6rem; left:.6rem; background:var(--color-berry-blush); color:white; font-size:.65rem; font-weight:700; padding:2px 9px; border-radius:999px; letter-spacing:.5px; text-transform:uppercase; }
+
+  .card-actions { position:absolute; inset:0; background:rgba(39,21,61,.5); display:flex; align-items:center; justify-content:center; gap:.75rem; opacity:0; transition:opacity var(--transition-normal); }
+  .action-btn { background:white; color:var(--color-dark-amethyst); border:none; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:.95rem; cursor:pointer; text-decoration:none; transition:background var(--transition-fast),transform var(--transition-fast); }
+  .action-btn:hover { background:var(--color-lavender-blush); transform:scale(1.1); }
+  .action-btn.delete:hover { background:#fde8e8; color:#c0392b; }
+
+  .p-card-body { padding:1rem 1.15rem; }
+  .p-card-title { font-size:.9rem; font-weight:600; color:var(--color-dark-amethyst); margin:0 0 .3rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .p-card-meta { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+  .cat-chip { background:var(--color-soft-blush); color:var(--color-berry-blush); font-size:.7rem; font-weight:500; padding:2px 9px; border-radius:999px; }
+  .date-text { font-size:.75rem; color:var(--text-secondary); }
+
+  /* empty */
+  .portfolio-empty { text-align:center; padding:4rem 1rem; background:white; border-radius:var(--radius-lg); border:1px solid var(--border-default); box-shadow:var(--shadow-sm); }
+  .portfolio-empty .empty-icon { font-size:3rem; display:block; margin-bottom:1rem; }
+  .portfolio-empty h5 { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.3rem; margin-bottom:.5rem; }
+  .portfolio-empty p { font-size:.875rem; color:var(--text-secondary); max-width:360px; margin:0 auto; }
+
+  /* modals */
+  .modal-content { border-radius:var(--radius-lg); border:none; box-shadow:var(--shadow-lg); }
+  .modal-header { border-bottom:1px solid var(--border-default); padding:1.25rem 1.5rem; }
+  .modal-header .modal-title { font-family:var(--font-heading); color:var(--color-dark-amethyst); font-size:1.15rem; }
+  .modal-body { padding:1.5rem; }
+  .modal-body .form-label { font-size:.85rem; font-weight:500; color:var(--text-primary); margin-bottom:.3rem; }
+  .modal-body .form-control, .modal-body .form-select { border-radius:var(--radius-sm); border-color:var(--border-default); font-size:.875rem; color:var(--text-primary); }
+  .modal-body .form-control:focus, .modal-body .form-select:focus { border-color:var(--color-berry-blush); box-shadow:0 0 0 3px rgba(163,62,126,.1); }
+  .modal-footer { border-top:1px solid var(--border-default); padding:1rem 1.5rem; }
+
+  .drop-zone { border:2px dashed var(--border-default); border-radius:var(--radius-md); padding:1.75rem; text-align:center; cursor:pointer; transition:all var(--transition-fast); }
+  .drop-zone:hover, .drop-zone.dragover { border-color:var(--color-berry-blush); background:var(--color-lavender-blush); }
+  .drop-zone i { font-size:1.5rem; color:var(--color-powder-blush); display:block; margin-bottom:.4rem; }
+  .drop-zone p { font-size:.82rem; color:var(--text-secondary); margin:0; }
+
+  @media(max-width:576px){ .portfolio-grid { grid-template-columns:1fr 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+
+        <a href="{{ url_for('dashboard.home') }}" class="back-link"><i class="bi bi-arrow-left"></i> Dashboard</a>
+        <h1>🗂️ My Portfolio</h1>
+      </div>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal"
+              style="border-radius:999px;padding:.55rem 1.5rem;font-size:.875rem;">
+        <i class="bi bi-plus-lg me-1"></i>Add item
+      </button>
+    </div>
+
+    {% if items %}
+
+    <!-- Upload shortcut -->
+    <div class="upload-card" data-bs-toggle="modal" data-bs-target="#addItemModal">
+      <div class="upload-icon">📸</div>
+      <h5>Add another piece</h5>
+      <p>Click to upload a new image to your portfolio.</p>
+    </div>
+
+    <!-- Grid -->
+    <div class="portfolio-grid">
+      {% for item in items %}
+      <div class="p-card">
+        <div class="card-img-wrap">
+          {% if item.image %}
+            <img src="{{ url_for('static', filename='images/uploads/' + item.image) }}" alt="{{ item.title }}" loading="lazy">
+          {% else %}
+            <div class="card-placeholder">🖼️</div>
+          {% endif %}
+          {% if item.is_featured %}<span class="featured-badge">⭐ Featured</span>{% endif %}
+          <div class="card-actions">
+            <button class="action-btn" title="Edit"
+               data-bs-toggle="modal" data-bs-target="#editItemModal"
+               data-id="{{ item.id }}"
+               data-title="{{ item.title }}"
+               data-desc="{{ item.description or '' }}"
+               data-cat="{{ item.category or '' }}"
+               data-featured="{{ 'true' if item.is_featured else 'false' }}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <form method="POST" action="{{ url_for('dashboard.delete_portfolio_item', item_id=item.id) }}" style="margin:0;">
+              <button type="submit" class="action-btn delete" title="Delete"
+                      onclick="return confirm('Delete this item?')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+        <div class="p-card-body">
+          <p class="p-card-title">{{ item.title }}</p>
+          <div class="p-card-meta">
+            {% if item.category %}<span class="cat-chip">{{ item.category }}</span>{% endif %}
+            <span class="date-text">{{ item.created_at.strftime('%b %Y') }}</span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+
+    <!-- Empty state -->
+    <div class="portfolio-empty">
+      <span class="empty-icon">🎨</span>
+      <h5>Your portfolio is empty</h5>
+      <p>Add your first piece of work and start getting discovered by clients.</p>
+      <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addItemModal"
+              style="border-radius:999px;padding:.6rem 1.75rem;">
+        <i class="bi bi-plus-lg me-1"></i>Add your first item
+      </button>
+    </div>
+
+    {% endif %}
+
+  </div>
+</div>
+
+
+<!-- ADD MODAL -->
+<div class="modal fade" id="addItemModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Portfolio Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('dashboard.add_portfolio_item') }}" enctype="multipart/form-data">
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Title <span style="color:var(--color-berry-blush)">*</span></label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Golden Hour Session — Tirana" required maxlength="120">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Image</label>
+            <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+              <i class="bi bi-cloud-upload"></i>
+              <p id="dropLabel">Click or drag & drop an image here</p>
+            </div>
+            <input type="file" id="fileInput" name="image" accept="image/*" style="display:none;">
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label">Category</label>
+              <input type="text" name="category" class="form-control" placeholder="e.g. Portrait, Wedding…" maxlength="60">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Featured?</label>
+              <div class="form-check mt-2">
+                <input type="checkbox" name="is_featured" id="featuredCheck" class="form-check-input" value="1">
+                <label for="featuredCheck" class="form-check-label" style="font-size:.875rem;">⭐ Show on public profile</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="3" placeholder="Brief, process, story behind this piece…"></textarea>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:999px;">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="border-radius:999px;">Add to portfolio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editItemModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Portfolio Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="editItemForm" enctype="multipart/form-data">
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Title <span style="color:var(--color-berry-blush)">*</span></label>
+            <input type="text" name="title" id="editTitle" class="form-control" required maxlength="120">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Replace image <span style="color:var(--text-secondary);font-weight:400;">(optional)</span></label>
+            <input type="file" name="image" class="form-control" accept="image/*">
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label">Category</label>
+              <input type="text" name="category" id="editCategory" class="form-control" maxlength="60">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Featured?</label>
+              <div class="form-check mt-2">
+                <input type="checkbox" name="is_featured" id="editFeatured" class="form-check-input" value="1">
+                <label for="editFeatured" class="form-check-label" style="font-size:.875rem;">⭐ Show on public profile</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" id="editDesc" class="form-control" rows="3"></textarea>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:999px;">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="border-radius:999px;">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// drag-drop
+const fileInput = document.getElementById('fileInput');
+const dropLabel = document.getElementById('dropLabel');
+const dropZone  = document.getElementById('dropZone');
+
+if (fileInput) {
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) dropLabel.textContent = '✅ ' + fileInput.files[0].name;
+  });
+  ['dragover','dragleave','drop'].forEach(evt => {
+    dropZone.addEventListener(evt, ev => {
+      ev.preventDefault();
+      dropZone.classList.toggle('dragover', evt === 'dragover');
+      if (evt === 'drop' && ev.dataTransfer.files[0]) {
+        const dt = new DataTransfer();
+        dt.items.add(ev.dataTransfer.files[0]);
+        fileInput.files = dt.files;
+        dropLabel.textContent = '✅ ' + ev.dataTransfer.files[0].name;
+      }
+    });
+  });
+}
+
+// populate edit modal
+document.querySelectorAll('[data-bs-target="#editItemModal"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('editTitle').value    = btn.dataset.title;
+    document.getElementById('editDesc').value     = btn.dataset.desc;
+    document.getElementById('editCategory').value = btn.dataset.cat;
+    document.getElementById('editFeatured').checked = btn.dataset.featured === 'true';
+    document.getElementById('editItemForm').action =
+      '/dashboard/portfolio/' + btn.dataset.id + '/edit';
+  });
+});
+</script>
+{% endblock %}

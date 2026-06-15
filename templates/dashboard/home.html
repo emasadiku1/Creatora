@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Creatora{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #F2EDF7; }
+  footer.footer-creatora { margin-top: 0 !important; }
+  .dash-home { min-height: 100vh; padding: 2rem 1rem 4rem; }
+  .home-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .home-kicker { margin: 0 0 .25rem; font-size: .72rem; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-secondary); }
+  .home-header h1 { margin: 0; font-family: var(--font-heading); font-size: 1.8rem; color: var(--color-dark-amethyst); }
+  .home-header p { margin: .35rem 0 0; color: var(--text-secondary); font-size: .9rem; }
+  .header-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .header-actions .btn { border-radius: 999px; font-size: .85rem; padding: .55rem 1rem; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .stat-card { background: #fff; border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 1.2rem; box-shadow: var(--shadow-sm); }
+  .stat-top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .75rem; }
+  .stat-icon { width: 38px; height: 38px; border-radius: var(--radius-sm); display: inline-flex; align-items: center; justify-content: center; color: var(--color-dark-amethyst); font-size: 1rem; }
+  .stat-value { font-family: var(--font-heading); font-size: 2rem; font-weight: 700; line-height: 1; color: var(--color-dark-amethyst); }
+  .stat-label { margin: 0; color: var(--text-secondary); font-size: .78rem; }
+  .stat-card a { font-size: .76rem; font-weight: 600; color: var(--color-berry-blush); }
+
+  .quick-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .85rem; margin-bottom: 1.5rem; }
+  .quick-link { background: #fff; border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: .95rem; color: var(--color-dark-amethyst); box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: .7rem; transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast); }
+  .quick-link:hover { color: var(--color-dark-amethyst); border-color: var(--color-berry-blush); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .quick-link i { width: 30px; height: 30px; border-radius: var(--radius-sm); display: inline-flex; align-items: center; justify-content: center; background: var(--color-soft-blush); color: var(--color-berry-blush); flex-shrink: 0; }
+  .quick-link span { font-size: .82rem; font-weight: 600; line-height: 1.2; }
+
+  .section-label { font-size: .7rem; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-secondary); margin: 0 0 .8rem; }
+  .content-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 1.25rem; }
+  .panel { background: #fff; border: 1px solid var(--border-default); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .panel-header { display: flex; align-items: center; gap: .65rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-default); }
+  .panel-header h2 { margin: 0; font-family: var(--font-body); font-size: .92rem; font-weight: 700; color: var(--color-dark-amethyst); }
+  .panel-header a { margin-left: auto; font-size: .78rem; font-weight: 600; color: var(--color-berry-blush); }
+  .panel-icon { width: 30px; height: 30px; border-radius: var(--radius-sm); display: inline-flex; align-items: center; justify-content: center; background: var(--color-soft-blush); color: var(--color-berry-blush); }
+  .panel-body { padding: .35rem 1.25rem 1.15rem; }
+
+  .list-item { display: flex; align-items: center; gap: .8rem; padding: .85rem 0; border-bottom: 1px solid var(--border-default); }
+  .list-item:last-child { border-bottom: none; }
+  .avatar-dot { width: 34px; height: 34px; border-radius: 50%; background: var(--color-lavender-blush); color: var(--color-berry-blush); display: inline-flex; align-items: center; justify-content: center; font-size: .78rem; font-weight: 700; flex-shrink: 0; }
+  .item-main { min-width: 0; flex: 1; }
+  .item-title { margin: 0 0 .1rem; color: var(--color-dark-amethyst); font-size: .84rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-meta { margin: 0; color: var(--text-secondary); font-size: .74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .status-pill { border-radius: 999px; padding: 2px 8px; background: var(--color-soft-blush); color: var(--color-berry-blush); font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .35px; flex-shrink: 0; }
+  .status-pill.open { background: #E1F5EE; color: #2a6b3c; }
+  .empty-state { text-align: center; color: var(--text-secondary); font-size: .84rem; padding: 1.8rem .75rem; }
+  .empty-state i { display: block; font-size: 1.6rem; color: var(--color-powder-blush); margin-bottom: .45rem; }
+  .side-stack { display: grid; gap: 1.25rem; }
+
+  @media (max-width: 992px) {
+    .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .quick-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .content-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 576px) {
+    .dash-home { padding: 1.4rem .75rem 3rem; }
+    .home-header { align-items: flex-start; }
+    .home-header h1 { font-size: 1.45rem; }
+    .stat-grid { gap: .75rem; }
+    .stat-card { padding: 1rem; }
+    .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+    .quick-link { padding: .8rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-home">
+  <div class="container">
+    <div class="home-header">
+      <div>
+        <p class="home-kicker">Creator workspace</p>
+        <h1>Welcome back, {{ current_user.display_name or current_user.username }}</h1>
+        <p>Keep your portfolio, bookings, content, collaborations, and digital shelf moving.</p>
+      </div>
+      <div class="header-actions">
+        <a class="btn btn-secondary" href="{{ url_for('public.profile', username=current_user.username) }}">
+          <i class="bi bi-person-badge me-1"></i>View profile
+        </a>
+        <a class="btn btn-primary" href="{{ url_for('dashboard.analytics') }}">
+          <i class="bi bi-graph-up-arrow me-1"></i>Analytics
+        </a>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon" style="background:#FBEAF0;"><i class="bi bi-inbox"></i></div>
+          <a href="{{ url_for('dashboard.crm') }}">Open</a>
+        </div>
+        <div class="stat-value">{{ pending_inquiries }}</div>
+        <p class="stat-label">New inquiries</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon" style="background:#EEF7FA;"><i class="bi bi-images"></i></div>
+          <a href="{{ url_for('dashboard.portfolio') }}">Manage</a>
+        </div>
+        <div class="stat-value">{{ portfolio_count }}</div>
+        <p class="stat-label">Portfolio items</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon" style="background:#E1F5EE;"><i class="bi bi-people"></i></div>
+          <a href="{{ url_for('dashboard.my_collabs') }}">Review</a>
+        </div>
+        <div class="stat-value">{{ active_collabs }}</div>
+        <p class="stat-label">Open collabs</p>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon" style="background:#FFF8D8;"><i class="bi bi-calendar2-week"></i></div>
+          <a href="{{ url_for('dashboard.planner') }}">Plan</a>
+        </div>
+        <div class="stat-value">{{ upcoming_posts }}</div>
+        <p class="stat-label">Scheduled posts</p>
+      </div>
+    </div>
+
+    <p class="section-label">Quick actions</p>
+    <div class="quick-grid">
+      <a class="quick-link" href="{{ url_for('dashboard.portfolio') }}"><i class="bi bi-plus-lg"></i><span>Add portfolio</span></a>
+      <a class="quick-link" href="{{ url_for('dashboard.crm') }}"><i class="bi bi-chat-dots"></i><span>Client CRM</span></a>
+      <a class="quick-link" href="{{ url_for('dashboard.planner') }}"><i class="bi bi-calendar-plus"></i><span>Planner</span></a>
+      <a class="quick-link" href="{{ url_for('dashboard.my_collabs') }}"><i class="bi bi-megaphone"></i><span>Collabs</span></a>
+      <a class="quick-link" href="{{ url_for('dashboard.shelf') }}"><i class="bi bi-shop"></i><span>My Shelf</span></a>
+      <a class="quick-link" href="{{ url_for('dashboard.services') }}"><i class="bi bi-stars"></i><span>Services</span></a>
+    </div>
+
+    <div class="content-grid">
+      <section class="panel">
+        <div class="panel-header">
+          <span class="panel-icon"><i class="bi bi-inbox"></i></span>
+          <h2>Recent inquiries</h2>
+          <a href="{{ url_for('dashboard.crm') }}">View all</a>
+        </div>
+        <div class="panel-body">
+          {% if recent_inquiries %}
+            {% for inquiry in recent_inquiries %}
+              <div class="list-item">
+                <span class="avatar-dot">{{ inquiry.name[:1]|upper }}</span>
+                <div class="item-main">
+                  <p class="item-title">{{ inquiry.name }}</p>
+                  <p class="item-meta">{{ inquiry.message }}</p>
+                </div>
+                <span class="status-pill">{{ inquiry.status }}</span>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-state">
+              <i class="bi bi-envelope-open"></i>
+              No inquiries yet. Your public profile is ready when clients arrive.
+            </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <div class="side-stack">
+        <section class="panel">
+          <div class="panel-header">
+            <span class="panel-icon"><i class="bi bi-calendar2-week"></i></span>
+            <h2>Content queue</h2>
+            <a href="{{ url_for('dashboard.planner') }}">Open</a>
+          </div>
+          <div class="panel-body">
+            {% if upcoming_content %}
+              {% for post in upcoming_content %}
+                <div class="list-item">
+                  <span class="avatar-dot"><i class="bi bi-{{ 'instagram' if post.platform == 'instagram' else 'play-btn' if post.platform == 'youtube' else 'music-note-beamed' if post.platform == 'tiktok' else 'share' }}"></i></span>
+                  <div class="item-main">
+                    <p class="item-title">{{ post.title or 'Untitled post' }}</p>
+                    <p class="item-meta">
+                      {{ post.platform or 'other' }}
+                      {% if post.scheduled %}- {{ post.scheduled.strftime('%b %d, %Y') }}{% else %}- Draft{% endif %}
+                    </p>
+                  </div>
+                  <span class="status-pill">{{ post.status }}</span>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty-state">
+                <i class="bi bi-calendar"></i>
+                No drafts or scheduled posts yet.
+              </div>
+            {% endif %}
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <span class="panel-icon"><i class="bi bi-shop"></i></span>
+            <h2>Digital shelf</h2>
+            <a href="{{ url_for('dashboard.shelf') }}">Manage</a>
+          </div>
+          <div class="panel-body">
+            <div class="list-item">
+              <span class="avatar-dot"><i class="bi bi-box-seam"></i></span>
+              <div class="item-main">
+                <p class="item-title">{{ shelf_count }} published item{{ '' if shelf_count == 1 else 's' }}</p>
+                <p class="item-meta">{{ shelf_downloads }} total download{{ '' if shelf_downloads == 1 else 's' }}</p>
+              </div>
+              <span class="status-pill open">Live</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <span class="panel-icon"><i class="bi bi-people"></i></span>
+            <h2>Your collabs</h2>
+            <a href="{{ url_for('dashboard.my_collabs') }}">View all</a>
+          </div>
+          <div class="panel-body">
+            {% if my_collabs %}
+              {% for collab in my_collabs %}
+                <div class="list-item">
+                  <span class="avatar-dot"><i class="bi bi-megaphone"></i></span>
+                  <div class="item-main">
+                    <p class="item-title">{{ collab.title }}</p>
+                    <p class="item-meta">{{ collab.role_needed or 'Open role' }}{% if collab.location %} - {{ collab.location }}{% endif %}</p>
+                  </div>
+                  <span class="status-pill {{ 'open' if collab.is_open else '' }}">{{ 'Open' if collab.is_open else 'Closed' }}</span>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty-state">
+                <i class="bi bi-people"></i>
+                No collaboration posts yet.
+              </div>
+            {% endif %}
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
